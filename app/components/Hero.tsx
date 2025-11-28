@@ -12,7 +12,7 @@ export function Hero() {
           <br />
           everyone is just 6 hops away.
         </p>
-        <Button>[ start discovery ]</Button>
+        <Button href="/dashboard">[ start discovery ]</Button>
       </div>
     </main>
   );
