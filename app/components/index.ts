@@ -9,3 +9,4 @@ export { ConnectionsList } from "./ConnectionsList";
 export { IndirectConnectionsList } from "./IndirectConnectionsList";
 export { CollapsibleBox } from "./CollapsibleBox";
 export { ConnectionsPanel } from "./ConnectionsPanel";
+export { WelcomeHeader } from "./WelcomeHeader";

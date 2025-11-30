@@ -4,13 +4,21 @@ import {
   Footer,
   CollapsibleBox,
   ConnectionsPanel,
+  WelcomeHeader,
 } from "../components";
 
 export default function Dashboard() {
   return (
     <GridBackground>
       <Navbar />
-      <main className="flex-1 flex items-center justify-center px-8 py-6">
+      <main className="flex-1 flex flex-col items-center justify-center px-8 py-6">
+        {/* Welcome Header with User Avatar */}
+        <WelcomeHeader
+          userName="Harshal Patil"
+          avatarUrl="/user-avatar.png"
+        />
+
+        {/* Collapsible Boxes */}
         <div className="flex gap-6">
           {/* Connections Box */}
           <CollapsibleBox
