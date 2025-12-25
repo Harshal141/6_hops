@@ -1,12 +1,20 @@
-export { GridBackground } from "./GridBackground";
-export { Navbar } from "./Navbar";
-export { Hero } from "./Hero";
-export { Button } from "./Button";
-export { Footer } from "./Footer";
-export { UserCard } from "./UserCard";
-export { ConnectionItem } from "./ConnectionItem";
-export { ConnectionsList } from "./ConnectionsList";
-export { IndirectConnectionsList } from "./IndirectConnectionsList";
-export { CollapsibleBox } from "./CollapsibleBox";
-export { ConnectionsPanel } from "./ConnectionsPanel";
-export { WelcomeHeader } from "./WelcomeHeader";
+// Layout components
+export { GridBackground, Navbar, Footer } from "./layout";
+
+// UI components
+export { Button, CollapsibleBox } from "./ui";
+
+// Connection components
+export {
+  ConnectionItem,
+  ConnectionsList,
+  IndirectConnectionsList,
+  UserCard,
+  ConnectionsPanel,
+} from "./connections";
+
+// Discover components
+export { DiscoverPanel } from "./discover";
+
+// Home components
+export { Hero, WelcomeHeader } from "./home";

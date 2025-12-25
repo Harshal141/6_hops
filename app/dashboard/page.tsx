@@ -5,6 +5,7 @@ import {
   CollapsibleBox,
   ConnectionsPanel,
   WelcomeHeader,
+  DiscoverPanel,
 } from "../components";
 
 export default function Dashboard() {
@@ -29,13 +30,9 @@ export default function Dashboard() {
             <ConnectionsPanel />
           </CollapsibleBox>
 
-          {/* Placeholder boxes for future functionality */}
+          {/* Discover Connections Box */}
           <CollapsibleBox title="discover" icon={<span>◎</span>}>
-            <div className="w-96 h-64 flex items-center justify-center">
-              <span className="font-mono text-neutral-400">
-                discovery feature coming soon...
-              </span>
-            </div>
+            <DiscoverPanel />
           </CollapsibleBox>
 
           <CollapsibleBox title="graph" icon={<span>◈</span>}>
