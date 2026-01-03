@@ -128,8 +128,6 @@ function EarlyAccessForm() {
       },
     };
 
-    console.log("Request body to be sent to backend:", requestBody);
-
     try {
       const response = await fetch("/api/early-access", {
         method: "POST",
