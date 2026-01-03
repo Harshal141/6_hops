@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// TODO: Replace with your hosted backend URL
-const BACKEND_URL = "https://your-backend-url.com/api/early-access";
+const BACKEND_URL = "https://service-hops.vercel.app/api/early-access";
 
 interface EarlyAccessRequest {
   email: string;
@@ -33,28 +32,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Uncomment this when you have your backend URL
-    // const response = await fetch(BACKEND_URL, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(body),
-    // });
-    //
-    // if (!response.ok) {
-    //   throw new Error("Backend request failed");
-    // }
-    //
-    // const data = await response.json();
-    // return NextResponse.json(data);
-
-    // For now, just return success with the body that would be sent
-    return NextResponse.json({
-      success: true,
-      message: "Early access request received",
-      data: body,
+    const response = await fetch(BACKEND_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     });
+    
+    if (!response.ok) {
+      throw new Error("Backend request failed");
+    }
+    
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Early access submission error:", error);
     return NextResponse.json(
