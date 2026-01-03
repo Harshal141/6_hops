@@ -1,10 +1,14 @@
 "use client";
 
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { GridBackground, Navbar, Footer } from "../../components";
+
+// Redirect to home page - coming soon mode
+redirect("/");
 
 interface PathConnection {
   id: string;

@@ -1,5 +1,6 @@
 "use client";
 
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import {
@@ -20,6 +21,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GridBackground, Navbar, Footer } from "../components";
+
+// Redirect to home page - coming soon mode
+redirect("/");
 
 // Sortable Item Component
 function SortableSectionItem({

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import {
   GridBackground,
   Navbar,
@@ -8,7 +9,11 @@ import {
   DiscoverPanel,
 } from "../components";
 
+// Redirect to home page - coming soon mode
 export default function Dashboard() {
+  redirect("/");
+
+  // Original dashboard code - kept for when we launch
   return (
     <GridBackground>
       <Navbar />
