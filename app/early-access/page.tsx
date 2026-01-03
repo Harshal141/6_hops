@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { GridBackground, Navbar, Footer } from "../components";
 import { Button } from "../components/ui";
@@ -33,7 +33,7 @@ interface TrackingData {
   screenResolution: string;
 }
 
-export default function EarlyAccess() {
+function EarlyAccessForm() {
   const searchParams = useSearchParams();
   const prefillEmail = searchParams.get("email") || "";
 
@@ -336,5 +336,29 @@ export default function EarlyAccess() {
       </main>
       <Footer />
     </GridBackground>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <GridBackground>
+      <Navbar />
+      <main className="flex-1 flex flex-col items-center justify-center px-8 py-12">
+        <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-8 w-full max-w-md">
+          <div className="text-center">
+            <p className="font-mono text-sm text-neutral-400">loading...</p>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </GridBackground>
+  );
+}
+
+export default function EarlyAccess() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <EarlyAccessForm />
+    </Suspense>
   );
 }
