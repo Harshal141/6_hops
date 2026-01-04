@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "../ui";
 
 export function Hero() {
@@ -47,7 +48,7 @@ export function Hero() {
           everyone is just 6 hops away.
         </p>
 
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-center justify-center">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-8">
           <input
             type="email"
             value={email}
@@ -57,6 +58,17 @@ export function Hero() {
           />
           <Button>[ get early access ]</Button>
         </form>
+
+        <Link
+          href="/demo"
+          className="inline-flex items-center gap-2 font-mono text-sm text-neutral-500 hover:text-neutral-800 transition-colors"
+        >
+          <span className="relative flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </span>
+          watch demo
+        </Link>
       </div>
     </main>
   );
