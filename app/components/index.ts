@@ -1,3 +1,6 @@
+// Auth components
+export { AuthProvider, useAuth } from "./auth";
+
 // Layout components
 export { GridBackground, Navbar, Footer } from "./layout";
 

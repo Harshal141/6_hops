@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import {
   GridBackground,
   Navbar,
@@ -8,14 +10,27 @@ import {
   DiscoverPanel,
 } from "../components";
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
   return (
     <GridBackground>
       <Navbar />
       <main className="flex-1 flex flex-col items-center justify-center px-8 py-6">
         {/* Welcome Header with User Avatar */}
         <WelcomeHeader
-          userName="Harshal Patil"
+          userName={profile?.name ?? user.email ?? "User"}
           avatarUrl="/user-avatar.png"
         />
 
