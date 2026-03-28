@@ -6,8 +6,8 @@ export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const res = await beClient(`/users/${session.user.id}`, {}, session.user.id);
-  if (!res.ok) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  const res = await beClient(`/profile/${session.user.id}`, {}, session.user.id);
+  if (res.status === 404) return NextResponse.json(null);
   return NextResponse.json(await res.json());
 }
 
@@ -16,7 +16,7 @@ export async function PUT(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const res = await beClient(`/users/${session.user.id}`, {
+  const res = await beClient("/profile", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

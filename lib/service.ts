@@ -1,9 +1,10 @@
 const BE_URL = process.env.NEXT_PUBLIC_BE_URL!;
 const ENV = process.env.NEXT_PUBLIC_APP_ENV ?? "stage";
 
-export async function beClient(path: string, init: RequestInit = {}) {
+export async function beClient(path: string, init: RequestInit = {}, userId?: string) {
   const headers = new Headers(init.headers);
   headers.set("X-Env", ENV);
+  if (userId) headers.set("X-User-Id", userId);
   return fetch(`${BE_URL}${path}`, { ...init, headers });
 }
 

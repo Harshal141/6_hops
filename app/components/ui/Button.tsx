@@ -4,9 +4,10 @@ interface ButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   href?: string;
+  type?: "button" | "submit" | "reset";
 }
 
-export function Button({ children, onClick, href }: ButtonProps) {
+export function Button({ children, onClick, href, type }: ButtonProps) {
   const className =
     "group relative px-8 py-4 bg-neutral-800 text-white font-mono text-sm tracking-wide hover:bg-neutral-700 transition-all duration-200 inline-block";
 
@@ -26,7 +27,7 @@ export function Button({ children, onClick, href }: ButtonProps) {
   }
 
   return (
-    <button onClick={onClick} className={className}>
+    <button type={type ?? "button"} onClick={onClick} className={className}>
       {content}
     </button>
   );

@@ -7,16 +7,20 @@ import {
   WelcomeHeader,
   DiscoverPanel,
 } from "../components";
-import { currentUser } from "../api/user/data";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const session = await auth();
+  if (!session) redirect("/login");
+
   return (
     <GridBackground>
       <Navbar />
       <main className="flex-1 flex flex-col items-center justify-center px-8 py-6">
         <WelcomeHeader
-          userName={currentUser.name}
-          avatarUrl="/user-avatar.png"
+          userName={session.user.name ?? ""}
+          avatarUrl={session.user.image ?? "/user-avatar.png"}
         />
 
         <div className="flex gap-6">
