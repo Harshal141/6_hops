@@ -242,9 +242,16 @@ export function useDeleteEducation() {
 export function useAddSkill() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (skillId: number) =>
-      apiFetch("/api/profile/skill", { method: "POST", ...json({ skill_id: skillId }) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
+    mutationFn: (skill: Skill) =>
+      apiFetch("/api/profile/skill", { method: "POST", ...json({ skill_id: skill.id }) }),
+    onMutate: async (skill) => {
+      await qc.cancelQueries({ queryKey: PROFILE_KEY });
+      const prev = qc.getQueryData<Profile>(PROFILE_KEY);
+      if (prev) qc.setQueryData<Profile>(PROFILE_KEY, { ...prev, skills: [...prev.skills, skill] });
+      return { prev };
+    },
+    onError: (_e, _s, ctx) => { if (ctx?.prev) qc.setQueryData(PROFILE_KEY, ctx.prev); },
+    onSettled: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
   });
 }
 
@@ -253,17 +260,25 @@ export function useRemoveSkill() {
   return useMutation({
     mutationFn: (skillId: number) =>
       apiFetch(`/api/profile/skill/${skillId}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
+    onMutate: async (skillId) => {
+      await qc.cancelQueries({ queryKey: PROFILE_KEY });
+      const prev = qc.getQueryData<Profile>(PROFILE_KEY);
+      if (prev) qc.setQueryData<Profile>(PROFILE_KEY, { ...prev, skills: prev.skills.filter((s) => s.id !== skillId) });
+      return { prev };
+    },
+    onError: (_e, _s, ctx) => { if (ctx?.prev) qc.setQueryData(PROFILE_KEY, ctx.prev); },
+    onSettled: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
   });
 }
 
 // ── Skill search ───────────────────────────────────────────
 
 export function useSearchSkills(query: string) {
+  const isDefault = query.trim().length === 0;
   return useQuery({
     queryKey: ["skill-search", query],
     queryFn: () => apiFetch<Skill[]>(`/api/skill/search?q=${encodeURIComponent(query)}`),
-    enabled: query.trim().length > 0,
-    staleTime: 60_000,
+    enabled: true,
+    staleTime: isDefault ? 5 * 60_000 : 60_000,
   });
 }
