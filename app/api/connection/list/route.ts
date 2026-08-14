@@ -1,11 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { beClient } from "@/lib/service";
+import { proxyAuthed } from "@/lib/proxy";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const res = await beClient("/connection/list", {}, session.user.id);
-  return NextResponse.json(await res.json());
+  return proxyAuthed("/connection/list");
 }

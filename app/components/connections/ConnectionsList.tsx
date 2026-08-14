@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useConnections, type Connection } from "@/lib/hooks/connection";
+import { useConnections, useDisconnect, type Connection } from "@/lib/hooks/connection";
 
 export function ConnectionsList() {
   const { data: connections, isLoading, isError } = useConnections();
@@ -18,7 +19,7 @@ export function ConnectionsList() {
     return (
       <div className="bg-white/80 backdrop-blur-sm border border-neutral-200 flex items-center justify-center h-full">
         <span className="font-mono text-sm text-neutral-400">
-          failed to load connections
+          backend unavailable
         </span>
       </div>
     );
@@ -54,26 +55,75 @@ export function ConnectionsList() {
 }
 
 function ConnectionRow({ connection }: { connection: Connection }) {
+  // two-step confirm — disconnecting is a soft delete, but still not a misclick
+  const [confirming, setConfirming] = useState(false);
+  const disconnect = useDisconnect();
+
   return (
-    <Link
-      href={`/profile/${connection.user_a_id === connection.other_user_id ? connection.user_a_id : connection.user_b_id}`}
-      className="flex items-center gap-3 py-3 px-4 hover:bg-neutral-50 transition-colors border-b border-neutral-100 last:border-b-0"
-    >
-      <div className="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center font-mono text-sm text-neutral-600 shrink-0">
-        {connection.other_icon ? (
-          <img
-            src={connection.other_icon}
-            alt={connection.other_name}
-            className="w-full h-full rounded-full object-cover"
-          />
+    <div className="group border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors">
+      <div className="flex items-center gap-3 py-3 px-4">
+        <Link
+          href={`/profile/${connection.other_id}`}
+          className="flex items-center gap-3 flex-1 min-w-0"
+        >
+          <div className="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center font-mono text-sm text-neutral-600 shrink-0 overflow-hidden">
+            {connection.other_icon ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={connection.other_icon}
+                alt={connection.other_name}
+                className="w-full h-full rounded-full object-cover"
+              />
+            ) : (
+              connection.other_name?.charAt(0).toUpperCase() ?? "?"
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="font-mono text-sm text-neutral-800 truncate">
+              {connection.other_name}
+            </p>
+            <p className="font-mono text-xs text-neutral-400 truncate">
+              {connection.other_user_id}
+            </p>
+          </div>
+        </Link>
+
+        {confirming ? (
+          <div className="flex gap-1 shrink-0">
+            <button
+              onClick={() => disconnect.mutate(connection.id)}
+              disabled={disconnect.isPending}
+              className="font-mono text-xs px-2 py-1 bg-red-600 text-white hover:bg-red-500
+                       transition-colors rounded cursor-pointer disabled:opacity-50"
+            >
+              {disconnect.isPending ? "..." : "confirm"}
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="font-mono text-xs px-2 py-1 border border-neutral-300 text-neutral-500
+                       hover:bg-neutral-100 transition-colors rounded cursor-pointer"
+            >
+              no
+            </button>
+          </div>
         ) : (
-          connection.other_name?.charAt(0).toUpperCase() ?? "?"
+          <button
+            onClick={() => setConfirming(true)}
+            className="font-mono text-xs px-2 py-1 border border-neutral-200 text-neutral-400
+                     hover:border-red-300 hover:text-red-600 transition-colors rounded
+                     cursor-pointer shrink-0 opacity-0 group-hover:opacity-100
+                     focus-visible:opacity-100"
+          >
+            disconnect
+          </button>
         )}
       </div>
-      <div>
-        <p className="font-mono text-sm text-neutral-800">{connection.other_name}</p>
-        <p className="font-mono text-xs text-neutral-400">{connection.other_user_id}</p>
-      </div>
-    </Link>
+
+      {disconnect.isError && (
+        <p className="font-mono text-xs text-red-500 px-4 pb-2">
+          {disconnect.error?.message ?? "Failed to disconnect"}
+        </p>
+      )}
+    </div>
   );
 }

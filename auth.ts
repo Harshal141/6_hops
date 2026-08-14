@@ -23,7 +23,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           headers: { "Content-Type": "application/json", "X-Env": ENV },
           body: JSON.stringify({ name: user.name, email: user.email, icon: user.image }),
         });
+
+        // Fail sign-in loudly. A token without `id` is rejected by the BE, so
+        // swallowing this would leave the user "logged in" with every API call
+        // returning 401 and no way to tell why.
+        if (!res.ok) {
+          throw new Error(`auth/upsert failed with ${res.status}`);
+        }
         const dbUser = await res.json();
+        if (!dbUser?.id) {
+          throw new Error("auth/upsert returned no user id");
+        }
         token.id = dbUser.id;
       }
       return token;

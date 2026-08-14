@@ -12,7 +12,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
-  }, session.user.id);
+  });
   return NextResponse.json(await res.json());
 }
 
@@ -21,6 +21,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  await beClient(`/profile/education/${id}`, { method: "DELETE" }, session.user.id);
+  await beClient(`/profile/education/${id}`, { method: "DELETE" });
   return new NextResponse(null, { status: 204 });
 }

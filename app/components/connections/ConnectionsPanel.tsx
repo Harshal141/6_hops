@@ -5,11 +5,14 @@ import { useSession } from "next-auth/react";
 import { UserCard } from "./UserCard";
 import { ConnectionsList } from "./ConnectionsList";
 import { IndirectConnectionsList } from "./IndirectConnectionsList";
+import { SentRequestsSection } from "./SentRequestsSection";
 import {
   usePendingRequests,
+  useSentRequests,
   useAcceptRequest,
   useDeclineRequest,
   useConnections,
+  useReachable,
   type ConnectionRequest,
 } from "@/lib/hooks/connection";
 
@@ -17,6 +20,9 @@ export function ConnectionsPanel() {
   const { data: session } = useSession();
   const { data: connections } = useConnections();
   const { data: pending } = usePendingRequests();
+  const { data: sent } = useSentRequests();
+  // same query key as IndirectConnectionsList — React Query dedupes the fetch
+  const { data: reachable } = useReachable();
 
   return (
     <div className="flex gap-4 h-[60vh]">
@@ -27,7 +33,7 @@ export function ConnectionsPanel() {
           title=""
           avatarUrl={session?.user?.image ?? "/user-avatar.png"}
           connectionCount={connections?.length ?? 0}
-          reachableCount={12}
+          reachableCount={reachable?.length ?? 0}
         />
       </div>
 
@@ -36,6 +42,7 @@ export function ConnectionsPanel() {
         {pending && pending.length > 0 && (
           <PendingRequestsSection requests={pending} />
         )}
+        {sent && sent.length > 0 && <SentRequestsSection requests={sent} />}
         <div className="flex-1 min-h-0">
           <ConnectionsList />
         </div>

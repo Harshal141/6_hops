@@ -7,6 +7,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { skillId } = await params;
-  await beClient(`/profile/skill/${skillId}`, { method: "DELETE" }, session.user.id);
+  await beClient(`/profile/skill/${skillId}`, { method: "DELETE" });
   return new NextResponse(null, { status: 204 });
 }

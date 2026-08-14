@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchUsers, type SearchUser } from "@/lib/hooks/connection";
+import { ConnectRequestModal } from "../connections/ConnectRequestModal";
 
 export function DiscoverPanel() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,31 +104,86 @@ export function DiscoverPanel() {
 }
 
 function SearchResultItem({ user }: { user: SearchUser }) {
+  const [showConnectModal, setShowConnectModal] = useState(false);
+
   return (
-    <div className="flex items-center justify-between py-3 px-4 hover:bg-neutral-50 transition-colors">
-      <div className="flex items-center gap-3">
-        {/* Avatar */}
-        <div className="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center font-mono text-sm text-neutral-600 shrink-0">
-          {user.name?.charAt(0).toUpperCase() ?? "?"}
+    <>
+      <div className="flex items-center justify-between gap-3 py-3 px-4 hover:bg-neutral-50 transition-colors">
+        <div className="flex items-center gap-3 min-w-0">
+          {/* Avatar */}
+          <div className="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center font-mono text-sm text-neutral-600 shrink-0">
+            {user.name?.charAt(0).toUpperCase() ?? "?"}
+          </div>
+
+          {/* Info */}
+          <div className="min-w-0">
+            <p className="font-mono text-sm text-neutral-800 truncate">{user.name}</p>
+            {user.title && (
+              <p className="font-mono text-xs text-neutral-500 truncate">{user.title}</p>
+            )}
+          </div>
         </div>
 
-        {/* Info */}
-        <div>
-          <p className="font-mono text-sm text-neutral-800">{user.name}</p>
-          {user.title && (
-            <p className="font-mono text-xs text-neutral-500">{user.title}</p>
-          )}
+        <div className="flex items-center gap-2 shrink-0">
+          <ConnectAction user={user} onConnect={() => setShowConnectModal(true)} />
+
+          <Link
+            href={`/profile/${user.id}`}
+            className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
+                     hover:border-neutral-800 hover:text-neutral-800 transition-colors"
+          >
+            View Profile
+          </Link>
         </div>
       </div>
 
-      {/* View Profile */}
-      <Link
-        href={`/profile/${user.id}`}
-        className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
-                 hover:border-neutral-800 hover:text-neutral-800 transition-colors"
-      >
-        View Profile
-      </Link>
-    </div>
+      {showConnectModal && (
+        <ConnectRequestModal
+          targetId={user.id}
+          targetName={user.name}
+          onClose={() => setShowConnectModal(false)}
+        />
+      )}
+    </>
+  );
+}
+
+/**
+ * The relationship already determines the only sensible action, so this renders
+ * a button only when connecting is actually possible.
+ */
+function ConnectAction({ user, onConnect }: { user: SearchUser; onConnect: () => void }) {
+  if (user.is_connected) {
+    return (
+      <span className="px-3 py-1.5 font-mono text-xs bg-green-100 text-green-700 border border-green-200">
+        connected
+      </span>
+    );
+  }
+
+  if (user.pending_direction === "outgoing") {
+    return (
+      <span className="px-3 py-1.5 font-mono text-xs bg-yellow-100 text-yellow-700 border border-yellow-200">
+        pending
+      </span>
+    );
+  }
+
+  if (user.pending_direction === "incoming") {
+    return (
+      <span className="px-3 py-1.5 font-mono text-xs bg-yellow-100 text-yellow-700 border border-yellow-200">
+        wants to connect
+      </span>
+    );
+  }
+
+  return (
+    <button
+      onClick={onConnect}
+      className="px-3 py-1.5 bg-neutral-800 text-white font-mono text-xs
+               hover:bg-neutral-700 transition-colors cursor-pointer"
+    >
+      connect
+    </button>
   );
 }
