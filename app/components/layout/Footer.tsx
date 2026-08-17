@@ -1,7 +1,10 @@
 export function Footer() {
+  // Derived rather than hardcoded — it was still reading 2025 into the next year.
+  const year = new Date().getFullYear();
+
   return (
     <footer className="w-full px-8 py-6 flex items-center justify-between border-t border-neutral-300/50">
-      <span className="text-xs font-mono text-neutral-400">© 2025 6 hops</span>
+      <span className="text-xs font-mono text-neutral-400">© {year} 6 hops</span>
       <div className="flex items-center gap-1 text-xs font-mono text-neutral-400">
         <span className="inline-block w-2 h-2 border border-neutral-400 mr-1" />
         <span>node_count: ∞</span>

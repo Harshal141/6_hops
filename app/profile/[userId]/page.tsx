@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { GridBackground, Navbar, Footer } from "../../components";
 import {
@@ -15,6 +16,7 @@ import {
 import { normalizeProfile, type Profile, type SectionKey, type SectionConfig, DEFAULT_SECTION_CONFIG } from "@/lib/hooks/profile";
 import { useConnectionStatus } from "@/lib/hooks/connection";
 import { ConnectRequestModal } from "../../components/connections/ConnectRequestModal";
+import { ConnectionStatusAction } from "../../components/connections/ConnectionStatusAction";
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -62,16 +64,18 @@ export default function PublicProfilePage() {
 
   if (loading) return (
     <GridBackground><Navbar />
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 flex flex-col items-center justify-center gap-4">
         <span className="font-mono text-neutral-400">loading...</span>
+        <BackToDashboard />
       </main>
     <Footer /></GridBackground>
   );
 
   if (error || !profile) return (
     <GridBackground><Navbar />
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 flex flex-col items-center justify-center gap-4">
         <span className="font-mono text-neutral-400">{error ?? "Profile not found"}</span>
+        <BackToDashboard />
       </main>
     <Footer /></GridBackground>
   );
@@ -102,33 +106,18 @@ export default function PublicProfilePage() {
       <Navbar />
       <main className="flex-1 px-8 py-6 overflow-auto">
         <div className="mx-auto max-w-3xl">
+          <div className="mb-6">
+            <BackToDashboard />
+          </div>
+
           <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-8 relative">
 
-            {/* Connection action button */}
             <div className="absolute top-4 right-4">
-              {connectionStatus === "connected" ? (
-                <span className="font-mono text-xs px-3 py-1.5 bg-green-100 text-green-700 border border-green-200 rounded">
-                  connected
-                </span>
-              ) : connectionStatus === "outgoing" ? (
-                <span className="font-mono text-xs px-3 py-1.5 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded">
-                  pending
-                </span>
-              ) : connectionStatus === "incoming" ? (
-                <span
-                  className="font-mono text-xs px-3 py-1.5 bg-yellow-100 text-yellow-700 border border-yellow-200 rounded"
-                  title="Accept or decline from the connections panel on your dashboard"
-                >
-                  wants to connect
-                </span>
-              ) : (
-                <button
-                  onClick={() => setShowConnectModal(true)}
-                  className="font-mono text-xs px-3 py-1.5 bg-neutral-800 text-white hover:bg-neutral-700 transition-colors rounded cursor-pointer"
-                >
-                  connect
-                </button>
-              )}
+              <ConnectionStatusAction
+                status={connectionStatus}
+                targetName={profile.name}
+                onConnect={() => setShowConnectModal(true)}
+              />
             </div>
 
             <ProfileHeader view={profile} isEditing={false} onChange={() => {}} />
@@ -159,5 +148,17 @@ export default function PublicProfilePage() {
         />
       )}
     </GridBackground>
+  );
+}
+
+function BackToDashboard() {
+  return (
+    <Link
+      href="/dashboard"
+      className="inline-flex items-center gap-2 font-mono text-sm text-neutral-500
+               hover:text-neutral-800 transition-colors"
+    >
+      <span aria-hidden>←</span> Back to Dashboard
+    </Link>
   );
 }

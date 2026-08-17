@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, Chip } from "../ui";
+
 import { useState, useEffect, useRef } from "react";
 import { useSearchSkills, type Skill } from "@/lib/hooks/profile";
 
@@ -25,7 +27,13 @@ function SkillSearch({ onAdd, onClose, existing }: {
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  useEffect(() => { setHighlighted(0); }, [query]);
+  // Adjusting state during render rather than in an effect: an effect would
+  // commit a render with a stale highlight first, then immediately re-render.
+  const [lastQuery, setLastQuery] = useState(query);
+  if (query !== lastQuery) {
+    setLastQuery(query);
+    setHighlighted(0);
+  }
 
   const visible = results.filter((s) => !existing.includes(s.id));
 
@@ -56,10 +64,10 @@ function SkillSearch({ onAdd, onClose, existing }: {
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder="search skills..."
-        className="font-mono text-xs px-3 py-1.5 border border-dashed border-neutral-300 text-neutral-600 bg-transparent focus:border-neutral-400 outline-none w-48 rounded"
+        className="font-mono text-xs px-3 py-1.5 border border-dashed border-neutral-300 text-neutral-600 bg-transparent focus:border-neutral-400 outline-none w-48"
       />
       {open && visible.length > 0 && (
-        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-neutral-200 rounded shadow-md z-10 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-neutral-200 shadow-md z-10 max-h-60 overflow-y-auto">
           {visible.map((s, i) => (
             <button
               key={s.id}
@@ -87,36 +95,31 @@ interface Props {
 export function SkillsSection({ skills, isEditing, onAdd, onRemove }: Props) {
   const [showSearch, setShowSearch] = useState(false);
 
-  // Reset when leaving edit mode
-  useEffect(() => {
+  // Reset when leaving edit mode — adjusted during render, not in an effect
+  const [wasEditing, setWasEditing] = useState(isEditing);
+  if (isEditing !== wasEditing) {
+    setWasEditing(isEditing);
     if (!isEditing) setShowSearch(false);
-  }, [isEditing]);
+  }
 
   return (
     <section className="mb-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Skills</h2>
         {isEditing && !showSearch && (
-          <button
-            onClick={() => setShowSearch(true)}
-            className="font-mono text-xs px-2 py-1 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded"
-          >
+          <Button variant="secondary" size="sm" onClick={() => setShowSearch(true)}>
             + add skill
-          </button>
+          </Button>
         )}
       </div>
 
       <div className="flex flex-wrap gap-2">
         {skills.map((skill) => (
-          <span
+          <Chip
             key={skill.id}
-            className="font-mono text-xs px-3 py-1.5 bg-neutral-100 text-neutral-600 border border-neutral-200 flex items-center gap-2 rounded"
-          >
-            {skill.name}
-            {isEditing && (
-              <button onClick={() => onRemove(skill.id)} className="text-red-400 hover:text-red-600 ml-1 cursor-pointer">×</button>
-            )}
-          </span>
+            label={skill.name}
+            onRemove={isEditing ? () => onRemove(skill.id) : undefined}
+          />
         ))}
         {isEditing && showSearch && (
           <SkillSearch

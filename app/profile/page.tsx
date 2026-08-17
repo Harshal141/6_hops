@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { GridBackground, Navbar, Footer } from "../components";
+import { Button } from "../components/ui";
 import {
   ProfileHeader,
   AboutSection,
@@ -211,19 +212,23 @@ export default function ProfilePage() {
 
               {/* View mode — single edit button, absolute is fine for one small button */}
               {!isEditing && (
-                <button onClick={startEditing} className="absolute top-4 right-4 font-mono text-xs px-3 py-1.5 border border-neutral-300 text-neutral-500 hover:bg-neutral-100 transition-colors rounded cursor-pointer">
-                  edit
-                </button>
+                <div className="absolute top-4 right-4">
+                  <Button variant="secondary" size="md" onClick={startEditing}>
+                    edit
+                  </Button>
+                </div>
               )}
 
               {/* Edit mode — in-flow bar so it never overlaps header inputs */}
               {isEditing && (
                 <div className="flex items-center justify-end gap-2 mb-6 pb-4 border-b border-neutral-100">
                   {saveError && <span className="font-mono text-xs text-red-500 mr-auto">{saveError}</span>}
-                  <button onClick={cancelEditing} className="font-mono text-xs px-3 py-1.5 border border-neutral-300 text-neutral-500 hover:bg-neutral-100 transition-colors rounded cursor-pointer">cancel</button>
-                  <button onClick={handleSave} disabled={isSaving} className="font-mono text-xs px-3 py-1.5 bg-neutral-800 text-white hover:bg-neutral-700 transition-colors disabled:opacity-50 rounded cursor-pointer">
-                    {isSaving ? "saving..." : "save"}
-                  </button>
+                  <Button variant="secondary" size="md" onClick={cancelEditing}>
+                    cancel
+                  </Button>
+                  <Button variant="primary" size="md" onClick={handleSave} loading={isSaving}>
+                    save
+                  </Button>
                 </div>
               )}
 

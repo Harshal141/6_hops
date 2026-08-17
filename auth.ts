@@ -3,6 +3,9 @@ import LinkedIn from "next-auth/providers/linkedin";
 
 const BE_URL = process.env.NEXT_PUBLIC_BE_URL!;
 const ENV = process.env.NEXT_PUBLIC_APP_ENV ?? "stage";
+// Which database this session may reach. Stamped into the token so the BE can
+// reject a stage session that tries to select prod via the X-Env header.
+const TOKEN_ENV = ENV === "prod" ? "prod" : "stage";
 
 declare module "next-auth" {
   interface Session {
@@ -20,7 +23,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (account && user) {
         const res = await fetch(`${BE_URL}/auth/upsert`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Env": ENV },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Env": ENV,
+            // This endpoint runs before a session exists, so it is gated on a
+            // shared secret instead of a session token.
+            "X-Internal-Secret": process.env.INTERNAL_API_SECRET ?? "",
+          },
           body: JSON.stringify({ name: user.name, email: user.email, icon: user.image }),
         });
 
@@ -36,6 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
         token.id = dbUser.id;
       }
+      token.env = TOKEN_ENV;
       return token;
     },
     async session({ session, token }) {

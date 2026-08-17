@@ -5,12 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { GridBackground, Navbar, Footer } from "../../components";
 import { ConnectRequestModal } from "../../components/connections/ConnectRequestModal";
-import {
-  usePathTo,
-  useConnectionStatus,
-  ApiError,
-  type PathPerson,
-} from "@/lib/hooks/connection";
+import { Avatar } from "../../components/ui";
+import { ConnectionStatusAction } from "../../components/connections/ConnectionStatusAction";
+import { usePathTo, useConnectionStatus } from "@/lib/hooks/connection";
+import { ApiError } from "@/lib/utils/api";
 
 export default function ConnectionPathPage() {
   const params = useParams();
@@ -84,9 +82,10 @@ export default function ConnectionPathPage() {
                 <div key={person.id} className="flex items-center">
                   <div className="flex flex-col items-center">
                     <Avatar
-                      person={person}
-                      isYou={index === 0}
-                      isTarget={index === path.length - 1}
+                      src={person.icon}
+                      name={person.name}
+                      size="lg"
+                      tone={index === 0 ? "self" : index === path.length - 1 ? "target" : "default"}
                     />
                     <div className="mt-2 text-center max-w-[100px]">
                       <p className="font-mono text-xs font-semibold text-neutral-800 truncate">
@@ -165,7 +164,7 @@ export default function ConnectionPathPage() {
           {/* ── Target summary ── */}
           <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-8">
             <div className="flex items-start gap-6">
-              <Avatar person={target} isYou={false} isTarget size="lg" />
+              <Avatar src={target.icon} name={target.name} size="xl" tone="target" />
               <div className="flex-1 min-w-0">
                 <h1 className="font-mono font-bold text-3xl text-neutral-800 truncate">
                   {target.name}
@@ -185,8 +184,9 @@ export default function ConnectionPathPage() {
                   >
                     view full profile
                   </Link>
-                  <StatusAction
+                  <ConnectionStatusAction
                     status={status}
+                    targetName={target.name}
                     onConnect={() => setShowConnectModal(true)}
                   />
                 </div>
@@ -220,77 +220,5 @@ function Shell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 flex items-center justify-center">{children}</main>
       <Footer />
     </GridBackground>
-  );
-}
-
-function Avatar({
-  person,
-  isYou,
-  isTarget,
-  size = "sm",
-}: {
-  person: PathPerson;
-  isYou: boolean;
-  isTarget: boolean;
-  size?: "sm" | "lg";
-}) {
-  const box = size === "lg" ? "w-24 h-24 text-4xl" : "w-14 h-14 text-lg";
-  const ring = isYou
-    ? "border-neutral-800"
-    : isTarget
-    ? "border-blue-300"
-    : "border-neutral-300";
-
-  return (
-    <div
-      className={`${box} ${ring} rounded-full flex items-center justify-center border-2
-                 bg-white overflow-hidden shrink-0 font-mono text-neutral-600`}
-    >
-      {person.icon ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={person.icon} alt={person.name} className="w-full h-full object-cover" />
-      ) : (
-        (person.name?.charAt(0).toUpperCase() ?? "?")
-      )}
-    </div>
-  );
-}
-
-function StatusAction({
-  status,
-  onConnect,
-}: {
-  status: ReturnType<typeof useConnectionStatus>;
-  onConnect: () => void;
-}) {
-  if (status === "connected") {
-    return (
-      <span className="px-3 py-1.5 font-mono text-xs bg-green-100 text-green-700 border border-green-200">
-        connected
-      </span>
-    );
-  }
-  if (status === "outgoing") {
-    return (
-      <span className="px-3 py-1.5 font-mono text-xs bg-yellow-100 text-yellow-700 border border-yellow-200">
-        request pending
-      </span>
-    );
-  }
-  if (status === "incoming") {
-    return (
-      <span className="px-3 py-1.5 font-mono text-xs bg-yellow-100 text-yellow-700 border border-yellow-200">
-        wants to connect
-      </span>
-    );
-  }
-  return (
-    <button
-      onClick={onConnect}
-      className="px-3 py-1.5 bg-neutral-800 text-white font-mono text-xs
-               hover:bg-neutral-700 transition-colors cursor-pointer"
-    >
-      connect
-    </button>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Checkbox, IconButton, Input, Textarea } from "../ui";
 import type { Experience } from "@/lib/hooks/profile";
 
 interface Props {
@@ -16,9 +17,9 @@ export function ExperienceSection({ experience, isEditing, onAdd, onChange, onRe
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Experience</h2>
         {isEditing && (
-          <button onClick={onAdd} className="font-mono text-xs px-2 py-1 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded cursor-pointer">
+          <Button variant="secondary" size="sm" onClick={onAdd}>
             + add
-          </button>
+          </Button>
         )}
       </div>
 
@@ -28,59 +29,73 @@ export function ExperienceSection({ experience, isEditing, onAdd, onChange, onRe
             {isEditing ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={exp.role}
-                    onChange={(e) => onChange(index, "role", e.target.value)}
-                    placeholder="Role"
-                    className="font-mono font-semibold text-neutral-800 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 flex-1 rounded"
-                  />
-                  <button onClick={() => onRemove(index)} className="text-red-400 hover:text-red-600 text-sm px-2 cursor-pointer">×</button>
+                  {/* Tailwind's preflight sets `font: inherit` on inputs, so the
+                      wrapper's weight carries into the field */}
+                  <div className="flex-1 font-semibold">
+                    <Input
+                      value={exp.role}
+                      onChange={(value) => onChange(index, "role", value)}
+                      placeholder="Role"
+                      ariaLabel="Role"
+                    />
+                  </div>
+                  <IconButton
+                    ariaLabel={`Remove ${exp.role || "experience"}`}
+                    tone="danger"
+                    onClick={() => onRemove(index)}
+                  >
+                    ×
+                  </IconButton>
                 </div>
-                <input
-                  type="text"
+
+                <Input
                   value={exp.company}
-                  onChange={(e) => onChange(index, "company", e.target.value)}
+                  onChange={(value) => onChange(index, "company", value)}
                   placeholder="Company"
-                  className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none w-full px-2 py-1 rounded"
+                  ariaLabel="Company"
                 />
-                <div className="flex items-center gap-3 flex-wrap">
+
+                <div className="flex items-end gap-3 flex-wrap">
                   <label className="flex flex-col gap-0.5">
                     <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">Start</span>
-                    <input
+                    <Input
                       type="date"
+                      size="sm"
+                      fullWidth={false}
                       value={exp.started_at ?? ""}
-                      onChange={(e) => onChange(index, "started_at", e.target.value || null)}
-                      className="font-mono text-xs text-neutral-700 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 rounded cursor-pointer"
+                      onChange={(value) => onChange(index, "started_at", value || null)}
+                      ariaLabel="Start date"
                     />
                   </label>
+
                   {!exp.currently_working && (
                     <label className="flex flex-col gap-0.5">
                       <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">End</span>
-                      <input
+                      <Input
                         type="date"
+                        size="sm"
+                        fullWidth={false}
                         value={exp.ended_at ?? ""}
-                        onChange={(e) => onChange(index, "ended_at", e.target.value || null)}
-                        className="font-mono text-xs text-neutral-700 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 rounded cursor-pointer"
+                        onChange={(value) => onChange(index, "ended_at", value || null)}
+                        ariaLabel="End date"
                       />
                     </label>
                   )}
-                  <label className="flex items-center gap-1.5 font-mono text-xs text-neutral-700 cursor-pointer mt-4">
-                    <input
-                      type="checkbox"
-                      checked={exp.currently_working}
-                      onChange={(e) => onChange(index, "currently_working", e.target.checked)}
-                      className="cursor-pointer"
-                    />
-                    currently working
-                  </label>
+
+                  <Checkbox
+                    label="currently working"
+                    checked={exp.currently_working}
+                    onChange={(checked) => onChange(index, "currently_working", checked)}
+                  />
                 </div>
-                <textarea
-                  value={exp.description}
-                  onChange={(e) => onChange(index, "description", e.target.value)}
-                  placeholder="Description"
+
+                <Textarea
+                  size="sm"
                   rows={2}
-                  className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none w-full px-2 py-1 resize-none rounded"
+                  value={exp.description}
+                  onChange={(value) => onChange(index, "description", value)}
+                  placeholder="Description"
+                  ariaLabel="Description"
                 />
               </div>
             ) : (

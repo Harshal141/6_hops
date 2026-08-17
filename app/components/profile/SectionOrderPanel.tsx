@@ -19,7 +19,7 @@ function SortableItem({ id, label, index }: { id: string; label: string; index: 
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`flex items-center gap-2 p-2 bg-neutral-50 border border-neutral-200 rounded cursor-grab active:cursor-grabbing ${isDragging ? "opacity-50 shadow-lg" : ""}`}
+      className={`flex items-center gap-2 p-2 bg-neutral-50 border border-neutral-200 cursor-grab active:cursor-grabbing ${isDragging ? "opacity-50 shadow-lg" : ""}`}
       {...attributes}
       {...listeners}
     >

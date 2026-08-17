@@ -23,12 +23,7 @@ export function Navbar() {
             <Link href="/profile" className="hover:text-neutral-900 transition-colors">
               profile
             </Link>
-            <button
-              onClick={() => signOut({ callbackUrl: "/" })}
-              className="hover:text-neutral-900 transition-colors"
-            >
-              sign out
-            </button>
+            <LinkAction onClick={() => signOut({ callbackUrl: "/" })}>sign out</LinkAction>
           </>
         ) : (
           <Link href="/login" className="hover:text-neutral-900 transition-colors">
@@ -37,5 +32,22 @@ export function Navbar() {
         )}
       </div>
     </nav>
+  );
+}
+
+/**
+ * A nav action that reads as a link but performs an action. Kept local because the
+ * nav's inline-text treatment is unique to it — the ui/Button variants are all
+ * padded controls.
+ */
+function LinkAction({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="hover:text-neutral-900 transition-colors cursor-pointer"
+    >
+      {children}
+    </button>
   );
 }

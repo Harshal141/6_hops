@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, Checkbox, IconButton, Input } from "../ui";
+
 import type { Education } from "@/lib/hooks/profile";
 
 // Parse stored year string into parts
@@ -45,9 +47,9 @@ export function EducationSection({ education, isEditing, onAdd, onChange, onRemo
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Education</h2>
         {isEditing && (
-          <button onClick={onAdd} className="font-mono text-xs px-2 py-1 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded cursor-pointer">
+          <Button variant="secondary" size="sm" onClick={onAdd}>
             + add
-          </button>
+          </Button>
         )}
       </div>
 
@@ -60,57 +62,67 @@ export function EducationSection({ education, isEditing, onAdd, onChange, onRemo
                 <div className="space-y-2">
                   <div className="flex items-start gap-2">
                     <div className="flex-1 space-y-2">
-                      <input
-                        type="text"
-                        value={edu.degree}
-                        onChange={(e) => onChange(index, "degree", e.target.value)}
-                        placeholder="Degree"
-                        className="font-mono font-semibold text-neutral-800 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none w-full px-2 py-1 rounded"
-                      />
-                      <input
-                        type="text"
+                      {/* preflight gives inputs `font: inherit`, so the wrapper's
+                          weight carries into the field */}
+                      <div className="font-semibold">
+                        <Input
+                          value={edu.degree}
+                          onChange={(value) => onChange(index, "degree", value)}
+                          placeholder="Degree"
+                          ariaLabel="Degree"
+                        />
+                      </div>
+                      <Input
                         value={edu.institution}
-                        onChange={(e) => onChange(index, "institution", e.target.value)}
+                        onChange={(value) => onChange(index, "institution", value)}
                         placeholder="Institution"
-                        className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none w-full px-2 py-1 rounded"
+                        ariaLabel="Institution"
                       />
                     </div>
-                    <button onClick={() => onRemove(index)} className="text-red-400 hover:text-red-600 text-sm px-2 mt-1 cursor-pointer">×</button>
+                    <div className="mt-1">
+                      <IconButton
+                        ariaLabel={`Remove ${edu.degree || "education"}`}
+                        tone="danger"
+                        onClick={() => onRemove(index)}
+                      >
+                        ×
+                      </IconButton>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-end gap-3 flex-wrap">
                     <label className="flex flex-col gap-0.5">
                       <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">Start year</span>
-                      <input
-                        type="text"
-                        value={start}
-                        onChange={(e) => onChange(index, "year", combineYear(e.target.value, end, current))}
-                        placeholder="2020"
-                        maxLength={4}
-                        className="font-mono text-xs text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none w-20 px-2 py-1 rounded"
-                      />
+                      <div className="w-20">
+                        <Input
+                          size="sm"
+                          value={start}
+                          onChange={(value) => onChange(index, "year", combineYear(value, end, current))}
+                          placeholder="2020"
+                          maxLength={4}
+                          ariaLabel="Start year"
+                        />
+                      </div>
                     </label>
                     {!current && (
                       <label className="flex flex-col gap-0.5">
                         <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-wider">End year</span>
-                        <input
-                          type="text"
-                          value={end}
-                          onChange={(e) => onChange(index, "year", combineYear(start, e.target.value, current))}
-                          placeholder="2024"
-                          maxLength={4}
-                          className="font-mono text-xs text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none w-20 px-2 py-1 rounded"
-                        />
+                        <div className="w-20">
+                          <Input
+                            size="sm"
+                            value={end}
+                            onChange={(value) => onChange(index, "year", combineYear(start, value, current))}
+                            placeholder="2024"
+                            maxLength={4}
+                            ariaLabel="End year"
+                          />
+                        </div>
                       </label>
                     )}
-                    <label className="flex items-center gap-1.5 font-mono text-xs text-neutral-700 cursor-pointer mt-4">
-                      <input
-                        type="checkbox"
-                        checked={current}
-                        onChange={(e) => onChange(index, "year", combineYear(start, end, e.target.checked))}
-                        className="cursor-pointer"
-                      />
-                      currently studying
-                    </label>
+                    <Checkbox
+                      label="currently studying"
+                      checked={current}
+                      onChange={(checked) => onChange(index, "year", combineYear(start, end, checked))}
+                    />
                   </div>
                 </div>
               ) : (

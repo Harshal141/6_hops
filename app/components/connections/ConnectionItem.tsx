@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Avatar } from "../ui";
 
 interface ConnectionItemProps {
   name: string;
@@ -8,7 +9,7 @@ interface ConnectionItemProps {
   hops: number;
   /** Your 1st-degree connection that starts the shortest path */
   viaName: string;
-  /** Target user id — links through to the full path view */
+  /** Links through to the full path view */
   href: string;
 }
 
@@ -16,21 +17,14 @@ export function ConnectionItem({ name, title, icon, hops, viaName, href }: Conne
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-2 py-3 px-4 hover:bg-neutral-50 transition-colors border-b border-neutral-100 last:border-b-0">
+      className="flex items-center justify-between gap-2 py-3 px-4 hover:bg-neutral-50
+               transition-colors border-b border-neutral-100 last:border-b-0"
+    >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center font-mono text-sm text-neutral-600 shrink-0 overflow-hidden">
-          {icon ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={icon} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            name?.charAt(0).toUpperCase() ?? "?"
-          )}
-        </div>
+        <Avatar src={icon} name={name} />
         <div className="min-w-0">
           <p className="font-mono text-sm text-neutral-800 truncate">{name}</p>
-          {title && (
-            <p className="font-mono text-xs text-neutral-400 truncate">{title}</p>
-          )}
+          {title && <p className="font-mono text-xs text-neutral-400 truncate">{title}</p>}
           <p className="font-mono text-xs text-neutral-400 truncate">via {viaName}</p>
         </div>
       </div>

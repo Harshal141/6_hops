@@ -1,7 +1,11 @@
+export { AcceptRequestModal } from "./AcceptRequestModal";
 export { ConnectionItem } from "./ConnectionItem";
 export { ConnectionsList } from "./ConnectionsList";
-export { IndirectConnectionsList } from "./IndirectConnectionsList";
-export { SentRequestsSection } from "./SentRequestsSection";
-export { ConnectRequestModal } from "./ConnectRequestModal";
-export { UserCard } from "./UserCard";
 export { ConnectionsPanel } from "./ConnectionsPanel";
+export { ConnectionStatusAction } from "./ConnectionStatusAction";
+export { ConnectRequestModal } from "./ConnectRequestModal";
+export { IndirectConnectionsList } from "./IndirectConnectionsList";
+export { RequestRow } from "./RequestRow";
+export { RequestsPane } from "./RequestsPane";
+export { RequestsTiles } from "./RequestsTiles";
+export { UserCard } from "./UserCard";

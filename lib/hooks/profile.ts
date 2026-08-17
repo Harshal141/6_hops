@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch, jsonBody } from "@/lib/utils/api";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -101,21 +102,10 @@ export const normalizeProfile = (data: Record<string, unknown>): Profile => ({
 
 const PROFILE_KEY = ["profile"] as const;
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${res.status} — ${text}`);
-  }
-  // 204 No Content
-  if (res.status === 204) return undefined as T;
-  return res.json();
-}
-
-const json = (body: unknown) => ({
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(body),
-});
+// apiFetch, the JSON body helper, and the error envelope live in lib/utils/api —
+// they were duplicated here and in connection.ts, which meant profile errors and
+// connection errors behaved differently for the same backend response.
+const json = jsonBody;
 
 // ── User ───────────────────────────────────────────────────
 

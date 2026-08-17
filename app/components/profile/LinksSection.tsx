@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, IconButton, Input } from "../ui";
 import type { Link } from "@/lib/hooks/profile";
 
 interface Props {
@@ -35,57 +36,66 @@ export function LinksSection({ links, isEditing, onChange, onRemove, onAdd }: Pr
         <div className="space-y-2">
           {links.map((link, index) => (
             <div key={link.id ?? `new-${index}`} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={link.type}
-                onChange={(e) => onChange(index, "type", e.target.value)}
-                placeholder="Type"
-                className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 w-24 rounded"
-              />
-              <input
-                type="text"
-                value={link.url}
-                onChange={(e) => onChange(index, "url", e.target.value)}
-                placeholder="URL"
-                className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 flex-1 rounded"
-              />
-              <button onClick={() => onRemove(index)} className="text-red-400 hover:text-red-600 text-sm px-2 cursor-pointer">×</button>
+              <div className="w-24">
+                <Input
+                  value={link.type}
+                  onChange={(value) => onChange(index, "type", value)}
+                  placeholder="Type"
+                  ariaLabel="Link type"
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  value={link.url}
+                  onChange={(value) => onChange(index, "url", value)}
+                  placeholder="URL"
+                  ariaLabel="Link URL"
+                />
+              </div>
+              <IconButton
+                ariaLabel={`Remove ${link.type || "link"}`}
+                tone="danger"
+                onClick={() => onRemove(index)}
+              >
+                ×
+              </IconButton>
             </div>
           ))}
 
           {showAdd ? (
             <div className="flex items-center gap-2 mt-2">
-              <input
-                type="text"
-                value={newLink.type}
-                onChange={(e) => setNewLink({ ...newLink, type: e.target.value })}
-                placeholder="Type (e.g., github)"
-                className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 w-32 rounded"
-              />
-              <input
-                type="text"
-                value={newLink.url}
-                onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
-                onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                placeholder="URL"
-                className="font-mono text-sm text-neutral-700 placeholder:text-neutral-400 bg-neutral-50 border border-neutral-200 focus:border-neutral-400 focus:bg-white outline-none px-2 py-1 flex-1 rounded"
-              />
-              <button
+              <div className="w-32">
+                <Input
+                  value={newLink.type}
+                  onChange={(value) => setNewLink({ ...newLink, type: value })}
+                  placeholder="Type (e.g., github)"
+                  ariaLabel="New link type"
+                />
+              </div>
+              <div className="flex-1">
+                <Input
+                  value={newLink.url}
+                  onChange={(value) => setNewLink({ ...newLink, url: value })}
+                  placeholder="URL"
+                  ariaLabel="New link URL"
+                />
+              </div>
+              <Button
+                variant="primary"
+                size="md"
                 onClick={handleAdd}
                 disabled={!newLink.type || !newLink.url}
-                className="font-mono text-xs px-3 py-1.5 bg-neutral-800 text-white rounded hover:bg-neutral-700 disabled:opacity-50 cursor-pointer"
               >
                 Add
-              </button>
-              <button onClick={handleCancel} className="text-neutral-400 hover:text-neutral-600 text-sm px-2 cursor-pointer">×</button>
+              </Button>
+              <IconButton ariaLabel="Cancel adding link" onClick={handleCancel}>
+                ×
+              </IconButton>
             </div>
           ) : (
-            <button
-              onClick={() => setShowAdd(true)}
-              className="font-mono text-xs px-2 py-1 bg-neutral-100 text-neutral-600 hover:bg-neutral-200 rounded cursor-pointer"
-            >
+            <Button variant="secondary" size="sm" onClick={() => setShowAdd(true)}>
               + add link
-            </button>
+            </Button>
           )}
         </div>
       ) : (
