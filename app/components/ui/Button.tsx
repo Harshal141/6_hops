@@ -3,7 +3,7 @@ import Link from "next/link";
 type Variant = "primary" | "secondary" | "ghost" | "danger" | "hero";
 type Size = "sm" | "md" | "lg";
 
-interface ButtonProps {
+export interface ButtonProps {
   children: React.ReactNode;
   variant?: Variant;
   size?: Size;

@@ -1,6 +1,6 @@
 import { signIn } from "@/auth";
 import { GridBackground, Navbar, Footer } from "../components";
-import { Button } from "../components/ui";
+import { FormSubmitButton } from "../components/ui";
 
 export default function LoginPage() {
   return (
@@ -20,7 +20,7 @@ export default function LoginPage() {
               await signIn("linkedin", { redirectTo: "/dashboard" });
             }}
           >
-            <Button type="submit">[ sign in with linkedin ]</Button>
+            <FormSubmitButton>[ sign in with linkedin ]</FormSubmitButton>
           </form>
         </div>
       </main>

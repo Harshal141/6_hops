@@ -5,6 +5,7 @@ export { Checkbox } from "./Checkbox";
 export { Chip } from "./Chip";
 export { CollapsibleBox } from "./CollapsibleBox";
 export { EmptyState } from "./EmptyState";
+export { FormSubmitButton } from "./FormSubmitButton";
 export { IconButton } from "./IconButton";
 export { Input } from "./Input";
 export { Modal } from "./Modal";

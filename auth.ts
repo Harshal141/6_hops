@@ -21,29 +21,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account }) {
       // only runs on first sign-in — upsert user in BE and store DB id in token
       if (account && user) {
-        const res = await fetch(`${BE_URL}/auth/upsert`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Env": ENV,
-            // This endpoint runs before a session exists, so it is gated on a
-            // shared secret instead of a session token.
-            "X-Internal-Secret": process.env.INTERNAL_API_SECRET ?? "",
-          },
-          body: JSON.stringify({ name: user.name, email: user.email, icon: user.image }),
-        });
+        try {
+          const res = await fetch(`${BE_URL}/auth/upsert`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Env": ENV,
+              // This endpoint runs before a session exists, so it is gated on a
+              // shared secret instead of a session token.
+              "X-Internal-Secret": process.env.INTERNAL_API_SECRET ?? "",
+            },
+            body: JSON.stringify({ name: user.name, email: user.email, icon: user.image }),
+          });
 
-        // Fail sign-in loudly. A token without `id` is rejected by the BE, so
-        // swallowing this would leave the user "logged in" with every API call
-        // returning 401 and no way to tell why.
-        if (!res.ok) {
-          throw new Error(`auth/upsert failed with ${res.status}`);
+          if (!res.ok) {
+            throw new Error(`auth/upsert failed with ${res.status}`);
+          }
+          const dbUser = await res.json();
+          if (!dbUser?.id) {
+            throw new Error("auth/upsert returned no user id");
+          }
+          token.id = dbUser.id;
+        } catch (err) {
+          // Fail sign-in loudly. A token without `id` is rejected by the BE, so
+          // swallowing this would leave the user "logged in" with every API call
+          // returning 401 and no way to tell why. Logged here (with the real
+          // cause — including network-level failures fetch() itself throws,
+          // e.g. BE unreachable) because Auth.js's own error page only ever
+          // shows a generic error code, not this message.
+          console.error("[auth] upsert failed during sign-in:", err);
+          throw new Error("auth/upsert failed");
         }
-        const dbUser = await res.json();
-        if (!dbUser?.id) {
-          throw new Error("auth/upsert returned no user id");
-        }
-        token.id = dbUser.id;
       }
       token.env = TOKEN_ENV;
       return token;
