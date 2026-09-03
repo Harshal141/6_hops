@@ -204,15 +204,16 @@ export default function ProfilePage() {
   return (
     <GridBackground>
       <Navbar />
-      <main className="flex-1 px-8 py-6 overflow-auto">
+      <main className="flex-1 px-4 sm:px-8 py-6 overflow-auto">
         <div className={`mx-auto ${isEditing ? "max-w-5xl" : "max-w-3xl"}`}>
-          <div className={`flex gap-6 ${isEditing ? "" : "justify-center"}`}>
+          <div className={`flex flex-col md:flex-row gap-6 ${isEditing ? "" : "md:justify-center"}`}>
 
-            <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-8 relative flex-1 max-w-3xl">
+            <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-8 flex-1 max-w-3xl">
 
-              {/* View mode — single edit button, absolute is fine for one small button */}
+              {/* View mode — in-flow bar, same treatment as the edit-mode bar below so it
+                  never overlaps the header (name/title can run long, especially on mobile) */}
               {!isEditing && (
-                <div className="absolute top-4 right-4">
+                <div className="flex justify-end mb-4">
                   <Button variant="secondary" size="md" onClick={startEditing}>
                     edit
                   </Button>

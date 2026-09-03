@@ -10,7 +10,7 @@ interface Props {
 
 export function AboutSection({ bio, isEditing, onChange }: Props) {
   return (
-    <section className="mb-8">
+    <section className="mb-6 sm:mb-8">
       <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider mb-3">About</h2>
       {isEditing ? (
         <Textarea

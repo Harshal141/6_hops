@@ -31,13 +31,13 @@ export function CollapsibleBox({
       {!isOpen && (
         <div
           onClick={() => setIsOpen(true)}
-          className="w-24 h-24 bg-white/90 backdrop-blur-sm border border-neutral-200
+          className="w-20 h-20 sm:w-24 sm:h-24 bg-white/90 backdrop-blur-sm border border-neutral-200
                      flex flex-col items-center justify-center gap-2 cursor-pointer
                      hover:bg-white hover:border-neutral-300 hover:shadow-lg
                      transition-all duration-200"
         >
           {icon && <div className="text-2xl text-neutral-600">{icon}</div>}
-          <span className="text-xs font-mono text-neutral-500 text-center px-2">
+          <span className="w-full text-[10px] sm:text-xs font-mono text-neutral-500 text-center px-1 break-words leading-tight">
             {title}
           </span>
         </div>
@@ -48,7 +48,7 @@ export function CollapsibleBox({
         <div
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
                      bg-white/95 backdrop-blur-md border border-neutral-200 shadow-2xl
-                     max-w-5xl w-[90vw] max-h-[80vh] overflow-hidden"
+                     max-w-5xl w-[95vw] sm:w-[90vw] max-h-[85vh] sm:max-h-[80vh] overflow-hidden"
           style={{
             backgroundImage: `
               linear-gradient(#e5e5e5 1px, transparent 1px),
@@ -81,7 +81,7 @@ export function CollapsibleBox({
           </div>
 
           {/* Content Area */}
-          <div className="p-6 overflow-auto max-h-[calc(80vh-60px)]">
+          <div className="p-3 sm:p-6 overflow-auto max-h-[calc(85vh-60px)] sm:max-h-[calc(80vh-60px)]">
             {children}
           </div>
         </div>

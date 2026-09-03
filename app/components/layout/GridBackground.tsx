@@ -5,7 +5,7 @@ interface GridBackgroundProps {
 export function GridBackground({ children }: GridBackgroundProps) {
   return (
     <div
-      className="min-h-screen w-full flex flex-col"
+      className="min-h-dvh w-full flex flex-col"
       style={{
         backgroundColor: "#f5f5f5",
         backgroundImage: `

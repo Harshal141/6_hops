@@ -26,9 +26,9 @@ export function ConnectionsPanel() {
   const outgoingCount = requests?.filter((r) => r.direction === "outgoing").length ?? 0;
 
   return (
-    <div className="flex gap-4 h-[60vh]">
+    <div className="flex flex-col md:flex-row gap-4 md:h-[60vh]">
       {/* Left — who you are, and the minimised request tiles */}
-      <div className="w-64 shrink-0 flex flex-col gap-3">
+      <div className="w-full md:w-64 shrink-0 flex flex-col gap-3">
         <UserCard
           name={session?.user?.name ?? "You"}
           title={profile?.title ?? ""}
@@ -44,13 +44,13 @@ export function ConnectionsPanel() {
         />
       </div>
 
-      {/* Middle — your actual connections, full height */}
-      <div className="w-80 shrink-0 h-full">
+      {/* Middle — your actual connections */}
+      <div className="w-full md:w-80 shrink-0 h-80 md:h-full">
         <ConnectionsList />
       </div>
 
       {/* Right — reachable, or whichever request pane the tiles selected */}
-      <div className="w-80 shrink-0 h-full">
+      <div className="w-full md:w-80 shrink-0 h-80 md:h-full">
         {rightPane === "reachable" ? (
           <IndirectConnectionsList />
         ) : (

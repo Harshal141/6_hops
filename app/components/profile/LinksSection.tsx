@@ -29,7 +29,7 @@ export function LinksSection({ links, isEditing, onChange, onRemove, onAdd }: Pr
   };
 
   return (
-    <section className="mb-8">
+    <section className="mb-6 sm:mb-8">
       <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider mb-3">Links</h2>
 
       {isEditing ? (

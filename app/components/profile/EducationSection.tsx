@@ -43,7 +43,7 @@ interface Props {
 
 export function EducationSection({ education, isEditing, onAdd, onChange, onRemove }: Props) {
   return (
-    <section className="mb-8">
+    <section className="mb-6 sm:mb-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Education</h2>
         {isEditing && (

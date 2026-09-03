@@ -13,7 +13,7 @@ interface Props {
 
 export function ExperienceSection({ experience, isEditing, onAdd, onChange, onRemove }: Props) {
   return (
-    <section className="mb-8">
+    <section className="mb-6 sm:mb-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Experience</h2>
         {isEditing && (

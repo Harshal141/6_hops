@@ -9,8 +9,8 @@ interface AvatarProps {
 const SIZES = {
   sm: "w-8 h-8 text-xs",
   md: "w-10 h-10 text-sm",
-  lg: "w-14 h-14 text-lg",
-  xl: "w-24 h-24 text-4xl",
+  lg: "w-10 h-10 text-sm sm:w-14 sm:h-14 sm:text-lg",
+  xl: "w-16 h-16 text-2xl sm:w-24 sm:h-24 sm:text-4xl",
 } as const;
 
 const TONES = {

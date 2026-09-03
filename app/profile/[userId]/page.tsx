@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { GridBackground, Navbar, Footer } from "../../components";
 import {
@@ -66,7 +65,7 @@ export default function PublicProfilePage() {
     <GridBackground><Navbar />
       <main className="flex-1 flex flex-col items-center justify-center gap-4">
         <span className="font-mono text-neutral-400">loading...</span>
-        <BackToDashboard />
+        <BackButton />
       </main>
     <Footer /></GridBackground>
   );
@@ -75,7 +74,7 @@ export default function PublicProfilePage() {
     <GridBackground><Navbar />
       <main className="flex-1 flex flex-col items-center justify-center gap-4">
         <span className="font-mono text-neutral-400">{error ?? "Profile not found"}</span>
-        <BackToDashboard />
+        <BackButton />
       </main>
     <Footer /></GridBackground>
   );
@@ -104,15 +103,17 @@ export default function PublicProfilePage() {
   return (
     <GridBackground>
       <Navbar />
-      <main className="flex-1 px-8 py-6 overflow-auto">
+      <main className="flex-1 px-4 sm:px-8 py-6 overflow-auto">
         <div className="mx-auto max-w-3xl">
           <div className="mb-6">
-            <BackToDashboard />
+            <BackButton />
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-8 relative">
+          <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-8">
 
-            <div className="absolute top-4 right-4">
+            {/* In-flow bar, same treatment as the profile-owner's edit button — an
+                absolute button floats over the header and collides with long names/titles. */}
+            <div className="flex justify-end mb-4">
               <ConnectionStatusAction
                 status={connectionStatus}
                 targetName={profile.name}
@@ -151,14 +152,31 @@ export default function PublicProfilePage() {
   );
 }
 
-function BackToDashboard() {
+/**
+ * Returns to wherever the visitor came from (connection path, discover results,
+ * dashboard, ...) instead of always dropping them on the dashboard. Falls back to
+ * the dashboard only when there's no in-app history to go back to — e.g. the
+ * profile link was opened directly in a new tab.
+ */
+function BackButton() {
+  const router = useRouter();
+
+  const goBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/dashboard");
+    }
+  };
+
   return (
-    <Link
-      href="/dashboard"
+    <button
+      type="button"
+      onClick={goBack}
       className="inline-flex items-center gap-2 font-mono text-sm text-neutral-500
-               hover:text-neutral-800 transition-colors"
+               hover:text-neutral-800 transition-colors cursor-pointer"
     >
-      <span aria-hidden>←</span> Back to Dashboard
-    </Link>
+      <span aria-hidden>←</span> Back
+    </button>
   );
 }

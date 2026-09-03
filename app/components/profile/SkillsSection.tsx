@@ -103,7 +103,7 @@ export function SkillsSection({ skills, isEditing, onAdd, onRemove }: Props) {
   }
 
   return (
-    <section className="mb-8">
+    <section className="mb-6 sm:mb-8">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Skills</h2>
         {isEditing && !showSearch && (

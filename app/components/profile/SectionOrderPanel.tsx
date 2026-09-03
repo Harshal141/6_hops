@@ -53,8 +53,8 @@ export function SectionOrderPanel({ sectionOrder, sectionConfig, onReorder }: Pr
   };
 
   return (
-    <div className="w-56 shrink-0">
-      <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sticky top-6">
+    <div className="w-full md:w-56 shrink-0 order-first md:order-none">
+      <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 md:sticky md:top-6">
         <h3 className="font-mono font-semibold text-sm text-neutral-800 mb-3">Section Order</h3>
         <p className="font-mono text-xs text-neutral-400 mb-4">Drag to reorder</p>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

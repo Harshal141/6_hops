@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { GridBackground, Navbar, Footer } from "../../components";
 import { ConnectRequestModal } from "../../components/connections/ConnectRequestModal";
-import { Avatar } from "../../components/ui";
+import { Avatar, Badge } from "../../components/ui";
 import { ConnectionStatusAction } from "../../components/connections/ConnectionStatusAction";
 import { usePathTo, useConnectionStatus } from "@/lib/hooks/connection";
 import { ApiError } from "@/lib/utils/api";
@@ -51,7 +51,7 @@ export default function ConnectionPathPage() {
   return (
     <GridBackground>
       <Navbar />
-      <main className="flex-1 px-8 py-6 overflow-auto">
+      <main className="flex-1 px-4 sm:px-8 py-6 overflow-auto">
         <div className="max-w-4xl mx-auto">
           <Link
             href="/dashboard"
@@ -61,23 +61,18 @@ export default function ConnectionPathPage() {
           </Link>
 
           {/* ── Path visualisation ── */}
-          <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-6 mb-6">
+            <div className="flex items-center justify-between gap-2 flex-wrap mb-4">
               <h2 className="font-mono font-semibold text-neutral-800">Connection Path</h2>
-              <span
-                className={`px-2 py-1 font-mono text-xs ${
-                  hops <= 2
-                    ? "bg-green-100 text-green-700"
-                    : hops <= 4
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-neutral-100 text-neutral-600"
-                }`}
-              >
-                {hops} {hops === 1 ? "hop" : "hops"} away
-              </span>
+              <Badge tone={hops <= 2 ? "success" : hops <= 4 ? "info" : "neutral"}>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
+                  {hops} {hops === 1 ? "hop" : "hops"} away
+                </span>
+              </Badge>
             </div>
 
-            <div className="flex items-center overflow-x-auto py-6 px-2">
+            <div className="flex items-center overflow-x-auto py-4 sm:py-6 px-1 sm:px-2">
               {path.map((person, index) => (
                 <div key={person.id} className="flex items-center">
                   <div className="flex flex-col items-center">
@@ -87,7 +82,7 @@ export default function ConnectionPathPage() {
                       size="lg"
                       tone={index === 0 ? "self" : index === path.length - 1 ? "target" : "default"}
                     />
-                    <div className="mt-2 text-center max-w-[100px]">
+                    <div className="mt-2 text-center max-w-[80px] sm:max-w-[100px]">
                       <p className="font-mono text-xs font-semibold text-neutral-800 truncate">
                         {index === 0 ? "You" : person.name?.split(" ")[0]}
                       </p>
@@ -97,16 +92,11 @@ export default function ConnectionPathPage() {
                         </p>
                       )}
                     </div>
-                    {index > 0 && (
-                      <span className="mt-1 font-mono text-[9px] text-neutral-400">
-                        hop {index}
-                      </span>
-                    )}
                   </div>
 
                   {index < path.length - 1 && (
-                    <div className="flex items-center mx-3 -mt-8">
-                      <div className="w-12 h-px bg-neutral-300 relative">
+                    <div className="flex items-center mx-2 sm:mx-3 -mt-8">
+                      <div className="w-8 sm:w-12 h-px bg-neutral-300 relative">
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-neutral-400 rounded-full" />
                       </div>
                     </div>
@@ -162,21 +152,21 @@ export default function ConnectionPathPage() {
           </div>
 
           {/* ── Target summary ── */}
-          <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-8">
-            <div className="flex items-start gap-6">
+          <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-8">
+            <div className="flex items-start gap-4 sm:gap-6">
               <Avatar src={target.icon} name={target.name} size="xl" tone="target" />
               <div className="flex-1 min-w-0">
-                <h1 className="font-mono font-bold text-3xl text-neutral-800 truncate">
+                <h1 className="font-mono font-bold text-xl sm:text-3xl text-neutral-800 truncate">
                   {target.name}
                 </h1>
                 {target.title && (
-                  <p className="font-mono text-lg text-neutral-500 mt-1 truncate">
+                  <p className="font-mono text-sm sm:text-lg text-neutral-500 mt-1 truncate">
                     {target.title}
                   </p>
                 )}
-                <p className="font-mono text-sm text-neutral-400 mt-2">{target.user_id}</p>
+                <p className="font-mono text-xs sm:text-sm text-neutral-400 mt-2">{target.user_id}</p>
 
-                <div className="flex items-center gap-2 mt-5">
+                <div className="flex items-center gap-2 flex-wrap mt-4 sm:mt-5">
                   <Link
                     href={`/profile/${target.id}`}
                     className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
@@ -193,7 +183,7 @@ export default function ConnectionPathPage() {
               </div>
             </div>
 
-            <p className="font-mono text-xs text-neutral-400 mt-6 pt-4 border-t border-neutral-200">
+            <p className="font-mono text-xs text-neutral-400 mt-4 sm:mt-6 pt-4 border-t border-neutral-200">
               You and {you.name} · reached through {intermediaries.length}{" "}
               {intermediaries.length === 1 ? "person" : "people"}
             </p>
