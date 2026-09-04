@@ -43,6 +43,20 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing]   = useState(false);
   const [edited, setEdited]         = useState<Profile | null>(null);
   const [saveError, setSaveError]   = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  // Copies the invite link, not the plain profile link — signups that go
+  // through /invite/<id> get referral-attributed, per prds/referral-signin-redirect.md.
+  const handleCopyInviteLink = async () => {
+    if (!profile) return;
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/invite/${profile.id}`);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1500);
+    } catch (err) {
+      console.error("[profile] failed to copy invite link:", err);
+    }
+  };
 
   const sectionConfig: SectionConfig[] = profile?.section_config ?? DEFAULT_SECTION_CONFIG;
   const sectionOrder: SectionKey[]     = sectionConfig.map((s) => s.key);
@@ -213,7 +227,24 @@ export default function ProfilePage() {
               {/* View mode — in-flow bar, same treatment as the edit-mode bar below so it
                   never overlaps the header (name/title can run long, especially on mobile) */}
               {!isEditing && (
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-end gap-2 mb-4">
+                  <Button variant="secondary" size="md" onClick={handleCopyInviteLink}>
+                    <span className="inline-flex items-center gap-1.5">
+                      {linkCopied ? (
+                        <svg aria-hidden viewBox="0 0 24 24" width="14" height="14" fill="none"
+                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : (
+                        <svg aria-hidden viewBox="0 0 24 24" width="14" height="14" fill="none"
+                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                      )}
+                      {linkCopied ? "copied!" : "invite friend"}
+                    </span>
+                  </Button>
                   <Button variant="secondary" size="md" onClick={startEditing}>
                     edit
                   </Button>

@@ -2,7 +2,13 @@ import { signIn } from "@/auth";
 import { GridBackground, Navbar, Footer } from "../components";
 import { FormSubmitButton } from "../components/ui";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+
   return (
     <GridBackground>
       <Navbar />
@@ -17,7 +23,7 @@ export default function LoginPage() {
           <form
             action={async () => {
               "use server";
-              await signIn("linkedin", { redirectTo: "/dashboard" });
+              await signIn("linkedin", { redirectTo: callbackUrl ?? "/dashboard" });
             }}
           >
             <FormSubmitButton>[ sign in with linkedin ]</FormSubmitButton>
