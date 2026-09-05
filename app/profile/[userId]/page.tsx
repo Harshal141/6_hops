@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { GridBackground, Navbar, Footer } from "../../components";
+import { GridBackground, Navbar, Footer, BackButton } from "../../components";
 import {
   ProfileHeader,
   AboutSection,
@@ -21,7 +21,9 @@ export default function PublicProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
-  const userId = params.userId as string;
+  // The URL segment is the public slug (`users.user_id`), not the internal
+  // UUID — profile.id (once loaded) is what connection/graph lookups need.
+  const handle = params.userId as string;
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,20 +31,20 @@ export default function PublicProfilePage() {
 
   // Connection state
   const [showConnectModal, setShowConnectModal] = useState(false);
-  const connectionStatus = useConnectionStatus(userId);
+  const connectionStatus = useConnectionStatus(profile?.id ?? "");
 
   // Redirect to own profile page if viewing self
   useEffect(() => {
-    if (session?.user?.id && session.user.id === userId) {
+    if (session?.user?.handle && session.user.handle === handle) {
       router.replace("/profile");
     }
-  }, [session, userId, router]);
+  }, [session, handle, router]);
 
   // Fetch the other user's profile
   useEffect(() => {
     async function fetchProfile() {
       try {
-        const res = await fetch(`/api/profile/${userId}`);
+        const res = await fetch(`/api/profile/${handle}`);
         if (!res.ok) {
           setError("Profile not found");
           return;
@@ -56,7 +58,7 @@ export default function PublicProfilePage() {
       }
     }
     fetchProfile();
-  }, [userId]);
+  }, [handle]);
 
 
   // ── Loading / error states ─────────────────────────────────
@@ -143,40 +145,11 @@ export default function PublicProfilePage() {
 
       {showConnectModal && (
         <ConnectRequestModal
-          targetId={userId}
+          targetId={profile.id}
           targetName={profile.name ?? "this person"}
           onClose={() => setShowConnectModal(false)}
         />
       )}
     </GridBackground>
-  );
-}
-
-/**
- * Returns to wherever the visitor came from (connection path, discover results,
- * dashboard, ...) instead of always dropping them on the dashboard. Falls back to
- * the dashboard only when there's no in-app history to go back to — e.g. the
- * profile link was opened directly in a new tab.
- */
-function BackButton() {
-  const router = useRouter();
-
-  const goBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/dashboard");
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={goBack}
-      className="inline-flex items-center gap-2 font-mono text-sm text-neutral-500
-               hover:text-neutral-800 transition-colors cursor-pointer"
-    >
-      <span aria-hidden>←</span> Back
-    </button>
   );
 }

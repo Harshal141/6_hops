@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchUsers, type SearchUser } from "@/lib/hooks/connection";
+import { useSearchUsers, useHopsTo, profileDestination, needsPathView, type SearchUser } from "@/lib/hooks/connection";
 import { ConnectRequestModal } from "../connections/ConnectRequestModal";
 import { Avatar, Input } from "../ui";
 import { ConnectionStatusAction } from "../connections/ConnectionStatusAction";
@@ -90,6 +90,11 @@ export function DiscoverPanel() {
 
 function SearchResultItem({ user }: { user: SearchUser }) {
   const [showConnectModal, setShowConnectModal] = useState(false);
+  // is_connected already tells us "1 hop away" without waiting on the reachable
+  // fetch; anyone else falls back to the graph-derived hop count.
+  const reachableHops = useHopsTo(user.id);
+  const hops = user.is_connected ? 1 : reachableHops;
+  const showPath = needsPathView(hops);
 
   return (
     <>
@@ -104,6 +109,11 @@ function SearchResultItem({ user }: { user: SearchUser }) {
             {user.title && (
               <p className="font-mono text-xs text-neutral-500 truncate">{user.title}</p>
             )}
+            {showPath && (
+              <p className="font-mono text-[10px] text-blue-600 truncate">
+                {hops} hops away · reachable via your network
+              </p>
+            )}
           </div>
         </div>
 
@@ -117,11 +127,11 @@ function SearchResultItem({ user }: { user: SearchUser }) {
           />
 
           <Link
-            href={`/profile/${user.id}`}
+            href={profileDestination(user.user_id, hops)}
             className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
                      hover:border-neutral-800 hover:text-neutral-800 transition-colors"
           >
-            View Profile
+            {showPath ? "View path" : "View Profile"}
           </Link>
         </div>
       </div>

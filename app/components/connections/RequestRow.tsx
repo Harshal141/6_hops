@@ -30,13 +30,13 @@ export function RequestRow({ request }: { request: ConnectionRequest }) {
     <>
       <div className="px-4 py-3 border-b border-neutral-100 last:border-b-0">
         <div className="flex items-start gap-3">
-          <Link href={`/profile/${request.other_id}`} className="shrink-0">
+          <Link href={`/profile/${request.other_handle}`} className="shrink-0">
             <Avatar src={request.other_icon} name={request.other_name} />
           </Link>
 
           <div className="flex-1 min-w-0">
             <Link
-              href={`/profile/${request.other_id}`}
+              href={`/profile/${request.other_handle}`}
               className="font-mono text-sm text-neutral-800 hover:underline block truncate"
             >
               {request.other_name}

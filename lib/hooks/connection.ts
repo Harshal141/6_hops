@@ -110,6 +110,27 @@ function useGraphInvalidation() {
 /** Traversal depth the UI asks for. The BE clamps anything above 6. */
 export const DEFAULT_MAX_HOPS = 3;
 
+/** The deepest degree of separation the BE will compute a path for. */
+export const MAX_HOPS_CEILING = 6;
+
+/**
+ * Below this many hops, the path view has nothing useful to add — a direct
+ * connection needs no introduction chain, so send them straight to the
+ * profile instead. This is the "how many degrees of separation do we cater
+ * for" flag: raise it as the path/reachable UI is extended to deeper chains.
+ */
+export const MIN_HOPS_FOR_PATH_VIEW = 2;
+
+/** Whether `hops` should route to the connection path view instead of straight to the profile. */
+export function needsPathView(hops: number | null): boolean {
+  return hops !== null && hops >= MIN_HOPS_FOR_PATH_VIEW;
+}
+
+/** `/connection/[id]` when the path view applies, `/profile/[id]` otherwise. */
+export function profileDestination(id: string, hops: number | null): string {
+  return needsPathView(hops) ? `/connection/${id}` : `/profile/${id}`;
+}
+
 // ── Queries ────────────────────────────────────────────────
 
 export function useSearchUsers(query: string) {
@@ -175,6 +196,22 @@ export function useConnectionStatus(userId: string): ConnectionStatus {
   if (request) return request.direction;
 
   return "none";
+}
+
+/**
+ * Hop count to someone, derived from already-loaded graph caches — 1 for a
+ * direct connection, the BFS distance for anyone in the full reachable
+ * window, or null when neither cache places them (no path within
+ * `MAX_HOPS_CEILING`, or they simply haven't loaded yet).
+ */
+export function useHopsTo(userId: string): number | null {
+  const { data: connections } = useConnections();
+  const { data: reachable } = useReachable(MAX_HOPS_CEILING);
+
+  if (connections?.some((c) => c.user_a_id === userId || c.user_b_id === userId)) {
+    return 1;
+  }
+  return reachable?.find((p) => p.id === userId)?.hops ?? null;
 }
 
 // ── Mutations ──────────────────────────────────────────────

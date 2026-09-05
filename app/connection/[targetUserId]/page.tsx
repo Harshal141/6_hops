@@ -1,22 +1,36 @@
 "use client";
 
-import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { GridBackground, Navbar, Footer } from "../../components";
 import { ConnectRequestModal } from "../../components/connections/ConnectRequestModal";
 import { Avatar, Badge } from "../../components/ui";
 import { ConnectionStatusAction } from "../../components/connections/ConnectionStatusAction";
-import { usePathTo, useConnectionStatus } from "@/lib/hooks/connection";
+import { usePathTo, useConnectionStatus, needsPathView } from "@/lib/hooks/connection";
 import { ApiError } from "@/lib/utils/api";
 
 export default function ConnectionPathPage() {
   const params = useParams();
+  const router = useRouter();
   const targetUserId = params.targetUserId as string;
 
   const { data, isLoading, error } = usePathTo(targetUserId);
-  const status = useConnectionStatus(targetUserId);
+  // `targetUserId` is the slug from the URL — connection caches key off the
+  // internal UUID, so status has nothing to match against until the path
+  // response resolves the target's actual id.
+  const targetId = data?.path[data.path.length - 1]?.id ?? "";
+  const status = useConnectionStatus(targetId);
   const [showConnectModal, setShowConnectModal] = useState(false);
+
+  // The path view has nothing to add below the threshold (e.g. someone who's
+  // already a direct connection) — send those straight to the profile instead,
+  // regardless of how this page was reached.
+  useEffect(() => {
+    if (data && !needsPathView(data.hops)) {
+      router.replace(`/profile/${targetUserId}`);
+    }
+  }, [data, targetUserId, router]);
 
   if (isLoading) return <Shell><span className="font-mono text-neutral-400">loading...</span></Shell>;
 
@@ -41,7 +55,7 @@ export default function ConnectionPathPage() {
     );
   }
 
-  if (!data) return null;
+  if (!data || !needsPathView(data.hops)) return null;
 
   const { hops, path } = data;
   const you = path[0];
@@ -168,7 +182,7 @@ export default function ConnectionPathPage() {
 
                 <div className="flex items-center gap-2 flex-wrap mt-4 sm:mt-5">
                   <Link
-                    href={`/profile/${target.id}`}
+                    href={`/profile/${target.user_id}`}
                     className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
                              hover:border-neutral-800 hover:text-neutral-800 transition-colors"
                   >

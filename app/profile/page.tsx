@@ -50,7 +50,7 @@ export default function ProfilePage() {
   const handleCopyInviteLink = async () => {
     if (!profile) return;
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/invite/${profile.id}`);
+      await navigator.clipboard.writeText(`${window.location.origin}/invite/${profile.user_id}`);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 1500);
     } catch (err) {

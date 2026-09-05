@@ -60,7 +60,7 @@ export function IndirectConnectionsList() {
               icon={person.icon}
               hops={person.hops}
               viaName={person.via_name}
-              href={`/connection/${person.id}`}
+              href={`/connection/${person.user_id}`}
             />
           ))}
       </div>

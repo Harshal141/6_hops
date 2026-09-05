@@ -3,7 +3,7 @@ import {
   Navbar,
   Footer,
   CollapsibleBox,
-  ConnectionsPanel,
+  ConnectionsBox,
   WelcomeHeader,
   DiscoverPanel,
 } from "../components";
@@ -24,13 +24,7 @@ export default async function Dashboard() {
         />
 
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-          <CollapsibleBox
-            title="connections"
-            icon={<span>◉</span>}
-            defaultOpen={false}
-          >
-            <ConnectionsPanel />
-          </CollapsibleBox>
+          <ConnectionsBox />
 
           <CollapsibleBox title="discover" icon={<span>◎</span>}>
             <DiscoverPanel />

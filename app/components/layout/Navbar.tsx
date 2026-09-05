@@ -26,11 +26,12 @@ export function Navbar() {
 
         {/* Mobile toggle */}
         {session ? (
-          <div className="sm:hidden">
+          <div className="sm:hidden flex items-center gap-3">
             <IconButton
               ariaLabel={menuOpen ? "Close menu" : "Open menu"}
               onClick={() => setMenuOpen((open) => !open)}
               tone="muted"
+              size="md"
             >
               {menuOpen ? "×" : "≡"}
             </IconButton>

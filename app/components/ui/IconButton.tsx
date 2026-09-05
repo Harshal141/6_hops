@@ -5,11 +5,17 @@ interface IconButtonProps {
   onClick: () => void;
   tone?: "danger" | "muted";
   disabled?: boolean;
+  size?: "sm" | "md";
 }
 
 const TONES = {
   danger: "text-red-400 hover:text-red-600",
   muted: "text-neutral-400 hover:text-neutral-700",
+} as const;
+
+const SIZES = {
+  sm: "w-6 h-6 text-sm",
+  md: "w-8 h-8 text-lg",
 } as const;
 
 /**
@@ -22,6 +28,7 @@ export function IconButton({
   onClick,
   tone = "muted",
   disabled = false,
+  size = "sm",
 }: IconButtonProps) {
   return (
     <button
@@ -29,9 +36,9 @@ export function IconButton({
       onClick={onClick}
       aria-label={ariaLabel}
       disabled={disabled}
-      className={`w-6 h-6 shrink-0 inline-flex items-center justify-center font-mono text-sm
+      className={`shrink-0 inline-flex items-center justify-center font-mono
                 leading-none transition-colors cursor-pointer disabled:opacity-50
-                disabled:cursor-not-allowed ${TONES[tone]}`}
+                disabled:cursor-not-allowed ${SIZES[size]} ${TONES[tone]}`}
     >
       {children}
     </button>

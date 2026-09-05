@@ -1,5 +1,5 @@
 // Layout components
-export { GridBackground, Navbar, Footer } from "./layout";
+export { GridBackground, Navbar, Footer, BackButton } from "./layout";
 
 // UI primitives
 export { Avatar, Button, CollapsibleBox, EmptyState, Modal } from "./ui";
@@ -8,6 +8,7 @@ export { Avatar, Button, CollapsibleBox, EmptyState, Modal } from "./ui";
 export {
   AcceptRequestModal,
   ConnectionItem,
+  ConnectionsBox,
   ConnectionsList,
   ConnectionsPanel,
   ConnectRequestModal,

@@ -10,7 +10,7 @@ const TOKEN_ENV = ENV === "prod" ? "prod" : "stage";
 
 declare module "next-auth" {
   interface Session {
-    user: { id: string } & DefaultSession["user"];
+    user: { id: string; handle: string } & DefaultSession["user"];
   }
 }
 
@@ -106,6 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             throw new Error("auth/upsert returned no user id");
           }
           token.id = dbUser.id;
+          token.handle = dbUser.user_id;
         } catch (err) {
           // Fail sign-in loudly. A token without `id` is rejected by the BE, so
           // swallowing this would leave the user "logged in" with every API call
@@ -122,6 +123,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       session.user.id = token.id as string;
+      session.user.handle = token.handle as string;
       return session;
     },
     async redirect({ url, baseUrl }) {

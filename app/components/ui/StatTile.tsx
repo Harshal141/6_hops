@@ -1,3 +1,5 @@
+import { NotificationBadge } from "./NotificationBadge";
+
 interface StatTileProps {
   label: string;
   count: number;
@@ -7,6 +9,8 @@ interface StatTileProps {
   onClick?: () => void;
   isActive?: boolean;
   ariaLabel?: string;
+  /** Unread count shown as a corner notification badge, on top of the count. Omitted or 0 shows nothing. */
+  badge?: number;
 }
 
 /**
@@ -17,7 +21,15 @@ interface StatTileProps {
  * rounded surfaces anywhere else, and the offset border is the same treatment the
  * landing and login CTAs use.
  */
-export function StatTile({ label, count, dot, onClick, isActive = false, ariaLabel }: StatTileProps) {
+export function StatTile({
+  label,
+  count,
+  dot,
+  onClick,
+  isActive = false,
+  ariaLabel,
+  badge = 0,
+}: StatTileProps) {
   const body = (
     <>
       <span className="flex items-center gap-2">
@@ -28,12 +40,13 @@ export function StatTile({ label, count, dot, onClick, isActive = false, ariaLab
     </>
   );
 
-  const shared = "w-full flex items-center justify-between text-xs font-mono px-2 py-2";
+  const shared = "relative w-full flex items-center justify-between text-xs font-mono px-2 py-2";
 
   if (!onClick) {
     return (
       <div className={`${shared} bg-neutral-50 border border-neutral-200 text-neutral-500`}>
         {body}
+        <NotificationBadge count={badge} />
       </div>
     );
   }
@@ -44,13 +57,14 @@ export function StatTile({ label, count, dot, onClick, isActive = false, ariaLab
       onClick={onClick}
       aria-pressed={isActive}
       aria-label={ariaLabel}
-      className={`${shared} group relative border transition-all cursor-pointer ${
+      className={`${shared} group border transition-all cursor-pointer ${
         isActive
           ? "bg-neutral-800 text-white border-neutral-800"
           : "bg-white text-neutral-600 border-neutral-300 hover:border-neutral-800 hover:text-neutral-900"
       }`}
     >
       {body}
+      <NotificationBadge count={badge} />
       {/* offset border reads as a shadow, and lifts on hover like the CTA buttons */}
       {!isActive && (
         <span

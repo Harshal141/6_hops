@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { NotificationBadge } from "./NotificationBadge";
 
 interface CollapsibleBoxProps {
   title: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  /** Unread count shown as a corner notification badge. Omitted or 0 shows nothing. */
+  badge?: number;
 }
 
 export function CollapsibleBox({
@@ -14,6 +17,7 @@ export function CollapsibleBox({
   icon,
   children,
   defaultOpen = false,
+  badge = 0,
 }: CollapsibleBoxProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -31,11 +35,12 @@ export function CollapsibleBox({
       {!isOpen && (
         <div
           onClick={() => setIsOpen(true)}
-          className="w-20 h-20 sm:w-24 sm:h-24 bg-white/90 backdrop-blur-sm border border-neutral-200
+          className="relative w-20 h-20 sm:w-24 sm:h-24 bg-white/90 backdrop-blur-sm border border-neutral-200
                      flex flex-col items-center justify-center gap-2 cursor-pointer
                      hover:bg-white hover:border-neutral-300 hover:shadow-lg
                      transition-all duration-200"
         >
+          <NotificationBadge count={badge} />
           {icon && <div className="text-2xl text-neutral-600">{icon}</div>}
           <span className="w-full text-[10px] sm:text-xs font-mono text-neutral-500 text-center px-1 break-words leading-tight">
             {title}

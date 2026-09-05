@@ -33,6 +33,7 @@ export function RequestsTiles({
         label="requests"
         count={incomingCount}
         dot="bg-yellow-500"
+        badge={incomingCount}
         isActive={active === "incoming"}
         ariaLabel={`${incomingCount} incoming requests`}
         onClick={() => onSelect(active === "incoming" ? "reachable" : "incoming")}

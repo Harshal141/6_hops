@@ -45,6 +45,8 @@ export interface Skill {
 
 export interface Profile {
   id: string;
+  /** Public slug (`users.user_id`) — use this, not `id`, in any URL. */
+  user_id: string;
   name: string;
   email: string;
   icon: string;
@@ -72,6 +74,7 @@ export const DEFAULT_SECTION_CONFIG: SectionConfig[] = [
 
 export const normalizeProfile = (data: Record<string, unknown>): Profile => ({
   id:       (data.id as string)    ?? "",
+  user_id:  (data.user_id as string) ?? "",
   name:     (data.name as string)  ?? "",
   email:    (data.email as string) ?? "",
   icon:     (data.icon as string)  ?? "",

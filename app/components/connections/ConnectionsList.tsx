@@ -61,7 +61,7 @@ function ConnectionRow({ connection }: { connection: Connection }) {
   return (
     <div className="group border-b border-neutral-100 last:border-b-0 hover:bg-neutral-50 transition-colors">
       <div className="flex items-center gap-3 py-3 px-4">
-        <Link href={`/profile/${connection.other_id}`} className="flex items-center gap-3 flex-1 min-w-0">
+        <Link href={`/profile/${connection.other_user_id}`} className="flex items-center gap-3 flex-1 min-w-0">
           <Avatar src={connection.other_icon} name={connection.other_name} />
           <div className="min-w-0">
             <p className="font-mono text-sm text-neutral-800 truncate">{connection.other_name}</p>

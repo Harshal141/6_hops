@@ -1,6 +1,7 @@
 export { AcceptRequestModal } from "./AcceptRequestModal";
 export { ConnectionItem } from "./ConnectionItem";
 export { ConnectionsList } from "./ConnectionsList";
+export { ConnectionsBox } from "./ConnectionsBox";
 export { ConnectionsPanel } from "./ConnectionsPanel";
 export { ConnectionStatusAction } from "./ConnectionStatusAction";
 export { ConnectRequestModal } from "./ConnectRequestModal";
