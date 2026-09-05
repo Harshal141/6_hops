@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, jsonBody, ApiError } from "@/lib/utils/api";
+import { useProfile } from "./profile";
 
 export { ApiError };
 
@@ -171,6 +173,100 @@ export function usePathTo(targetId: string) {
     queryFn: () => apiFetch<ConnectionPath>(`/api/connection/path/${targetId}`),
     enabled: targetId.length > 0,
   });
+}
+
+// ── Ego network (connections graph) ───────────────────────────
+
+/** A person in the 2-degree connections graph: you, a direct connection, or a friend of a friend. */
+export interface EgoNetworkPerson {
+  /** Internal id — used only for graph node identity/edge matching, never in a URL. */
+  id: string;
+  name: string;
+  title: string | null;
+  icon: string | null;
+  /** 0 = you, 1 = direct connection, 2 = friend of a friend */
+  degree: 0 | 1 | 2;
+  /** id of the 1st-degree connection this person is reachable through (degree 2 only) */
+  viaId: string | null;
+  /** Public slug for `/profile/[handle]` — null only for "you". */
+  handle: string | null;
+}
+
+export interface EgoNetworkEdge {
+  source: string;
+  target: string;
+}
+
+export interface EgoNetwork {
+  people: EgoNetworkPerson[];
+  edges: EgoNetworkEdge[];
+}
+
+const EGO_ID = "me";
+
+/**
+ * Your 2-degree network: you, your direct connections, and their direct
+ * connections — grouped by which of your friends reaches each one, for the
+ * connections graph. Composes three existing queries rather than adding a
+ * new endpoint; each stays independently cached.
+ */
+export function useEgoNetwork() {
+  const profile = useProfile();
+  const connections = useConnections();
+  const reachable = useReachable(2);
+
+  const data = useMemo<EgoNetwork | null>(() => {
+    if (!profile.data || !connections.data || !reachable.data) return null;
+
+    const me: EgoNetworkPerson = {
+      id: EGO_ID,
+      name: profile.data.name,
+      title: profile.data.title || null,
+      icon: profile.data.icon || null,
+      degree: 0,
+      viaId: null,
+      handle: null,
+    };
+
+    const firstDegree: EgoNetworkPerson[] = connections.data.map((c) => ({
+      id: c.other_id,
+      name: c.other_name,
+      title: c.other_title,
+      icon: c.other_icon,
+      degree: 1,
+      viaId: null,
+      handle: c.other_user_id,
+    }));
+    const firstDegreeIds = new Set(firstDegree.map((p) => p.id));
+
+    // `via_id` can point at a friend not currently in `connections` (a stale
+    // cache mid-mutation) — drop those rather than render a dangling edge
+    const secondDegree: EgoNetworkPerson[] = reachable.data
+      .filter((p) => p.hops === 2 && firstDegreeIds.has(p.via_id))
+      .map((p) => ({
+        id: p.id,
+        name: p.name,
+        title: p.title,
+        icon: p.icon,
+        degree: 2,
+        viaId: p.via_id,
+        handle: p.user_id,
+      }));
+
+    const edges: EgoNetworkEdge[] = [
+      ...firstDegree.map((p) => ({ source: EGO_ID, target: p.id })),
+      ...secondDegree.map((p) => ({ source: p.viaId as string, target: p.id })),
+    ];
+
+    return { people: [me, ...firstDegree, ...secondDegree], edges };
+  }, [profile.data, connections.data, reachable.data]);
+
+  return {
+    data,
+    isLoading: profile.isLoading || connections.isLoading || reachable.isLoading,
+    isError: profile.isError || connections.isError || reachable.isError,
+    error: profile.error ?? connections.error ?? reachable.error,
+  };
 }
 
 // ── Relationship with one person ───────────────────────────

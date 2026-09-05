@@ -9,6 +9,7 @@ export {
   AcceptRequestModal,
   ConnectionItem,
   ConnectionsBox,
+  ConnectionsGraph,
   ConnectionsList,
   ConnectionsPanel,
   ConnectRequestModal,

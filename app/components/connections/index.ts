@@ -5,6 +5,7 @@ export { ConnectionsBox } from "./ConnectionsBox";
 export { ConnectionsPanel } from "./ConnectionsPanel";
 export { ConnectionStatusAction } from "./ConnectionStatusAction";
 export { ConnectRequestModal } from "./ConnectRequestModal";
+export { ConnectionsGraph } from "./graph";
 export { IndirectConnectionsList } from "./IndirectConnectionsList";
 export { RequestRow } from "./RequestRow";
 export { RequestsPane } from "./RequestsPane";

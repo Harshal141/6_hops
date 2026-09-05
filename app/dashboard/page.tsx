@@ -4,6 +4,7 @@ import {
   Footer,
   CollapsibleBox,
   ConnectionsBox,
+  ConnectionsGraph,
   WelcomeHeader,
   DiscoverPanel,
 } from "../components";
@@ -31,11 +32,7 @@ export default async function Dashboard() {
           </CollapsibleBox>
 
           <CollapsibleBox title="graph" icon={<span>◈</span>}>
-            <div className="w-full max-w-96 h-64 flex items-center justify-center">
-              <span className="font-mono text-neutral-400">
-                network graph coming soon...
-              </span>
-            </div>
+            <ConnectionsGraph />
           </CollapsibleBox>
         </div>
       </main>
