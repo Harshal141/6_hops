@@ -7,6 +7,8 @@ import {
   ConnectionsGraph,
   WelcomeHeader,
   DiscoverPanel,
+  OnboardingTour,
+  ResumeNudgeModal,
 } from "../components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -27,16 +29,19 @@ export default async function Dashboard() {
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
           <ConnectionsBox />
 
-          <CollapsibleBox title="discover" icon={<span>◎</span>}>
+          <CollapsibleBox title="discover" icon={<span>◎</span>} onboardingId="discover">
             <DiscoverPanel />
           </CollapsibleBox>
 
-          <CollapsibleBox title="graph" icon={<span>◈</span>}>
+          <CollapsibleBox title="graph" icon={<span>◈</span>} onboardingId="graph">
             <ConnectionsGraph />
           </CollapsibleBox>
         </div>
       </main>
       <Footer />
+
+      <OnboardingTour />
+      <ResumeNudgeModal />
     </GridBackground>
   );
 }

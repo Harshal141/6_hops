@@ -10,6 +10,8 @@ interface CollapsibleBoxProps {
   defaultOpen?: boolean;
   /** Unread count shown as a corner notification badge. Omitted or 0 shows nothing. */
   badge?: number;
+  /** Anchor id the onboarding tour spotlights this tile by — omit unless it's one of the tour's targets. */
+  onboardingId?: string;
 }
 
 export function CollapsibleBox({
@@ -18,6 +20,7 @@ export function CollapsibleBox({
   children,
   defaultOpen = false,
   badge = 0,
+  onboardingId,
 }: CollapsibleBoxProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
@@ -35,6 +38,7 @@ export function CollapsibleBox({
       {!isOpen && (
         <div
           onClick={() => setIsOpen(true)}
+          data-onboarding={onboardingId}
           className="relative w-20 h-20 sm:w-24 sm:h-24 bg-white/90 backdrop-blur-sm border border-neutral-200
                      flex flex-col items-center justify-center gap-2 cursor-pointer
                      hover:bg-white hover:border-neutral-300 hover:shadow-lg

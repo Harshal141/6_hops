@@ -10,7 +10,13 @@ export function ConnectionsBox() {
   const incomingCount = requests?.filter((r) => r.direction === "incoming").length ?? 0;
 
   return (
-    <CollapsibleBox title="connections" icon={<span>◉</span>} defaultOpen={false} badge={incomingCount}>
+    <CollapsibleBox
+      title="connections"
+      icon={<span>◉</span>}
+      defaultOpen={false}
+      badge={incomingCount}
+      onboardingId="connections"
+    >
       <ConnectionsPanel />
     </CollapsibleBox>
   );

@@ -3,6 +3,7 @@ export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { Checkbox } from "./Checkbox";
 export { Chip } from "./Chip";
+export { Coachmark } from "./Coachmark";
 export { CollapsibleBox } from "./CollapsibleBox";
 export { EmptyState } from "./EmptyState";
 export { FormSubmitButton } from "./FormSubmitButton";
