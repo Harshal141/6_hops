@@ -5,12 +5,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
 import type { ForceGraphMethods, ForceGraphProps, LinkObject, NodeObject } from "react-force-graph-3d";
-import { EmptyState } from "../../ui";
+import { Button, EmptyState } from "../../ui";
 import { NodeHoverCard } from "./NodeHoverCard";
 import { useContainerSize } from "./useContainerSize";
 import { useEgoNetwork, type EgoNetworkPerson } from "@/lib/hooks/connection";
+import { useProfile } from "@/lib/hooks/profile";
+import { useCopyInviteLink } from "@/lib/hooks/useCopyInviteLink";
 import { describeError } from "@/lib/utils/api";
 import { BACKGROUND, LINK_COLOR, RING_COLOR } from "./graphTheme";
+import { buildPreviewNetwork } from "./previewNetwork";
 
 const LINK_DISTANCE = 150; // was the library default (~30) — longer lines
 const INITIAL_CAMERA_Z = 260; // start a little zoomed in versus the library's auto-fit
@@ -98,22 +101,40 @@ export function ConnectionsGraph() {
   const hasMountedRef = useRef(false);
 
   const { data: network, isLoading: networkLoading, isError: networkError, error } = useEgoNetwork();
+  const { data: profile } = useProfile();
+  const { copied: inviteCopied, copy: copyInviteLink } = useCopyInviteLink(profile?.user_id);
+
+  // A brand-new user sees a sample network instead of an empty canvas, once
+  // the real query has actually resolved to "nothing here" — never in place
+  // of a genuine loading/error state.
+  const isNewUser = !networkLoading && !networkError && !!network && network.people.length <= 1;
+
+  // Only the center node is real — it's your own name and photo (`network`
+  // always includes it once it resolves). Everyone else in the preview is a
+  // sample person built by `buildPreviewNetwork`.
+  const displayNetwork = useMemo(
+    () => (isNewUser ? buildPreviewNetwork(network!.people.find((p) => p.degree === 0)!) : network),
+    [isNewUser, network]
+  );
+  const effectiveLoading = !isNewUser && networkLoading;
+  const effectiveError = !isNewUser && networkError;
+
   const graphData = useMemo(
     () =>
-      network
+      displayNetwork
         ? {
-            nodes: network.people as GraphNode[],
-            links: network.edges.map((e) => ({ source: e.source, target: e.target })),
+            nodes: displayNetwork.people as GraphNode[],
+            links: displayNetwork.edges.map((e) => ({ source: e.source, target: e.target })),
           }
         : null,
-    [network]
+    [displayNetwork]
   );
 
   useEffect(() => {
-    if (!network) return;
+    if (!displayNetwork) return;
     let cancelled = false;
     Promise.all(
-      network.people.map(
+      displayNetwork.people.map(
         (p) =>
           new Promise<void>((resolve) => {
             const img = new Image();
@@ -132,7 +153,7 @@ export function ConnectionsGraph() {
     return () => {
       cancelled = true;
     };
-  }, [network]);
+  }, [displayNetwork]);
 
   // Known upstream issue (vasturiano/react-force-graph#596): Next's
   // client-side router cache can revive this whole page via React's
@@ -241,22 +262,15 @@ export function ConnectionsGraph() {
   }, [hovered, size.width, size.height]);
 
   const hoveredPerson = hovered as (GraphNode & EgoNetworkPerson) | null;
-  const isReady = !networkLoading && !networkError && imagesReady && graphData;
+  const isReady = !effectiveLoading && !effectiveError && imagesReady && graphData;
 
   return (
     <div ref={containerRef} className="relative w-full h-[60vh] min-h-[420px] bg-white/80 backdrop-blur-sm border border-neutral-200">
-      {(networkLoading || (!networkError && !imagesReady)) && <EmptyState message="loading your network..." />}
+      {(effectiveLoading || (!effectiveError && !imagesReady)) && <EmptyState message="loading your network..." />}
 
-      {networkError && <EmptyState message={describeError(error)} />}
+      {effectiveError && <EmptyState message={describeError(error)} />}
 
-      {!networkError && network && network.people.length <= 1 && (
-        <EmptyState
-          message="no connections yet"
-          hint="connect with someone first to see your network here"
-        />
-      )}
-
-      {isReady && network!.people.length > 1 && (
+      {isReady && displayNetwork!.people.length > 1 && (
         <ForceGraph3D
           key={instanceKey}
           ref={fgRef}
@@ -287,6 +301,15 @@ export function ConnectionsGraph() {
       )}
 
       {hoveredPerson && <NodeHoverCard person={hoveredPerson} x={hoverPos.x} y={hoverPos.y} />}
+
+      {isReady && isNewUser && (
+        <div className="absolute bottom-0 inset-x-0 px-3 py-2 bg-white/90 backdrop-blur-sm border-t border-neutral-200 flex items-center justify-between gap-2">
+          <span className="font-mono text-xs text-neutral-400">start adding connections to connect</span>
+          <Button variant="secondary" size="sm" onClick={copyInviteLink}>
+            {inviteCopied ? "copied!" : "invite friend"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -22,6 +22,7 @@ import {
   type SectionKey, type SectionConfig,
   DEFAULT_SECTION_CONFIG,
 } from "@/lib/hooks/profile";
+import { useCopyInviteLink } from "@/lib/hooks/useCopyInviteLink";
 
 export default function ProfilePage() {
   const { data: profile, isLoading, isError } = useProfile();
@@ -43,20 +44,10 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing]   = useState(false);
   const [edited, setEdited]         = useState<Profile | null>(null);
   const [saveError, setSaveError]   = useState<string | null>(null);
-  const [linkCopied, setLinkCopied] = useState(false);
 
   // Copies the invite link, not the plain profile link — signups that go
   // through /invite/<id> get referral-attributed, per prds/referral-signin-redirect.md.
-  const handleCopyInviteLink = async () => {
-    if (!profile) return;
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/invite/${profile.user_id}`);
-      setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 1500);
-    } catch (err) {
-      console.error("[profile] failed to copy invite link:", err);
-    }
-  };
+  const { copied: linkCopied, copy: handleCopyInviteLink } = useCopyInviteLink(profile?.user_id);
 
   const sectionConfig: SectionConfig[] = profile?.section_config ?? DEFAULT_SECTION_CONFIG;
   const sectionOrder: SectionKey[]     = sectionConfig.map((s) => s.key);

@@ -205,7 +205,20 @@ The backend guarantees these — see `service_hops/CLAUDE.md` §8.
 
 ---
 
-## 10. Definition of done
+## 10. Copy — user-facing text
+
+Text a user actually reads (empty states, buttons, page copy, toasts) must read like a person
+wrote it, not a model.
+
+- **No em dashes or dash-asides** (`text — more text`) in user-facing strings. Split into two
+  sentences or drop the aside instead. This does not apply to code comments or internal names.
+- **Casing is deliberate, not incidental.** The app is lowercase mono throughout (`dashboard`,
+  `sign in`, `no connections yet`) — match that voice. Digits/labels like `404` and proper
+  nouns (a person's real name) keep their own casing.
+
+---
+
+## 11. Definition of done
 
 Before a frontend change is finished:
 
@@ -213,6 +226,7 @@ Before a frontend change is finished:
 - [ ] Any new primitive lives in `ui/`, is domain-free, and is exported from the barrel.
 - [ ] No hardcoded colour that should be a token.
 - [ ] Nothing copy-pasted between two files — shared logic is in `lib/utils/`.
+- [ ] User-facing copy has no dash-asides and matches the lowercase mono voice (§10).
 - [ ] New API routes use `proxyAuthed`.
 - [ ] The page did not grow past ~150 lines; new UI went into a component.
 - [ ] No `any`. `npm run lint` and `npm run build` both pass.
