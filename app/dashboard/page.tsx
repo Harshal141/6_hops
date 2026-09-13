@@ -7,8 +7,6 @@ import {
   ConnectionsGraph,
   WelcomeHeader,
   DiscoverPanel,
-  OnboardingTour,
-  ResumeNudgeModal,
 } from "../components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -39,9 +37,6 @@ export default async function Dashboard() {
         </div>
       </main>
       <Footer />
-
-      <OnboardingTour />
-      <ResumeNudgeModal />
     </GridBackground>
   );
 }
