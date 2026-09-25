@@ -1,6 +1,7 @@
 import NextAuth, { DefaultSession } from "next-auth";
 import LinkedIn from "next-auth/providers/linkedin";
 import { cookies } from "next/headers";
+import { avatarBlobKey, mirrorAvatarToBlob } from "@/lib/utils/avatar";
 
 const BE_URL = process.env.NEXT_PUBLIC_BE_URL!;
 const ENV = process.env.NEXT_PUBLIC_APP_ENV ?? "stage";
@@ -81,6 +82,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const referredBy = await readInviteReferrerId();
 
+          // LinkedIn's photo URL is signed and expires (the `e=` query param) —
+          // storing it directly means the avatar 403s once that time passes.
+          // Copy it into Blob storage, which doesn't expire, instead. Runs on
+          // every sign-in (not just account creation), so a returning user's
+          // avatar gets refreshed each time regardless of how long they were away.
+          const icon = user.email && user.image
+            ? (await mirrorAvatarToBlob(user.image, avatarBlobKey(user.email))) ?? user.image
+            : user.image;
+
           const res = await fetch(`${BE_URL}/auth/upsert`, {
             method: "POST",
             headers: {
@@ -93,7 +103,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             body: JSON.stringify({
               name: user.name,
               email: user.email,
-              icon: user.image,
+              icon,
               ...(referredBy ? { referredBy } : {}),
             }),
           });

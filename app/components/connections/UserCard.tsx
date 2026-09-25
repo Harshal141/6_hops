@@ -4,7 +4,7 @@ import { StatTile } from "../ui";
 interface UserCardProps {
   name: string;
   title?: string;
-  avatarUrl: string;
+  avatarUrl?: string | null;
   connectionCount?: number;
   reachableCount?: number;
 }
@@ -18,13 +18,17 @@ export function UserCard({
 }: UserCardProps) {
   return (
     <div className="bg-white/80 backdrop-blur-sm border border-neutral-200 p-6 flex flex-col items-center gap-4">
-      <div className="w-24 h-24 relative">
-        <Image
-          src={avatarUrl}
-          alt={name}
-          fill
-          className="object-cover rounded-full"
-        />
+      <div className="w-24 h-24 relative rounded-full overflow-hidden bg-neutral-200 flex items-center justify-center font-mono text-3xl text-neutral-600">
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={name}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          name?.charAt(0).toUpperCase() ?? "?"
+        )}
       </div>
       <div className="text-center">
         <h2 className="font-mono font-semibold text-neutral-800 text-lg">
