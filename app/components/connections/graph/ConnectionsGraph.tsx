@@ -17,6 +17,7 @@ import { buildPreviewNetwork } from "./previewNetwork";
 
 const LINK_DISTANCE = 150; // was the library default (~30) — longer lines
 const INITIAL_CAMERA_Z = 260; // start a little zoomed in versus the library's auto-fit
+const AVATAR_LOAD_TIMEOUT_MS = 5000;
 
 // half of createAvatarSprite's worldSize per degree — used to project how
 // big a node's photo actually looks on screen at the current zoom, so the
@@ -41,7 +42,11 @@ const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
 type GraphNode = NodeObject<EgoNetworkPerson>;
 
 /** A billboarded, circular avatar sprite — always faces the camera as it orbits. */
-function createAvatarSprite(img: HTMLImageElement | undefined, degree: EgoNetworkPerson["degree"]): THREE.Sprite {
+function createAvatarSprite(
+  img: HTMLImageElement | undefined,
+  degree: EgoNetworkPerson["degree"],
+  name: string
+): THREE.Sprite {
   const size = 128;
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -59,6 +64,14 @@ function createAvatarSprite(img: HTMLImageElement | undefined, degree: EgoNetwor
   if (img) {
     ctx.clip();
     ctx.drawImage(img, center - r, center - r, r * 2, r * 2);
+  } else {
+    // no photo on file — same initial the Avatar primitive falls back to, so
+    // the node reads as "no picture" rather than as a failed image
+    ctx.fillStyle = "#737373";
+    ctx.font = `600 ${Math.round(r)}px ui-monospace, monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(name?.charAt(0).toUpperCase() || "?", center, center);
   }
   ctx.restore();
 
@@ -137,14 +150,30 @@ export function ConnectionsGraph() {
       displayNetwork.people.map(
         (p) =>
           new Promise<void>((resolve) => {
+            // Someone with no photo gets the initials fallback, so there is
+            // nothing to fetch. Assigning `img.src = ""` would instead make the
+            // browser re-request the current page URL as an image and, in some
+            // browsers, fire neither `load` nor `error` — leaving this promise,
+            // and the whole graph waiting behind `Promise.all`, pending forever.
+            if (!p.icon) {
+              resolve();
+              return;
+            }
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.onload = () => {
-              images.current.set(p.id, img);
+            // One unreachable host must never strand the graph on its loading
+            // state — fall back to the initials for that node instead.
+            const timer = setTimeout(resolve, AVATAR_LOAD_TIMEOUT_MS);
+            const settle = () => {
+              clearTimeout(timer);
               resolve();
             };
-            img.onerror = () => resolve();
-            img.src = p.icon ?? "";
+            img.onload = () => {
+              images.current.set(p.id, img);
+              settle();
+            };
+            img.onerror = settle;
+            img.src = p.icon;
           })
       )
     ).then(() => {
@@ -282,7 +311,7 @@ export function ConnectionsGraph() {
           nodeLabel={() => ""}
           nodeThreeObject={(node) => {
             const person = node as GraphNode & EgoNetworkPerson;
-            return createAvatarSprite(images.current.get(person.id), person.degree);
+            return createAvatarSprite(images.current.get(person.id), person.degree, person.name);
           }}
           nodeThreeObjectExtend={false}
           linkColor={(link) => {

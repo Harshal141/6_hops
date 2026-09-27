@@ -88,7 +88,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // every sign-in (not just account creation), so a returning user's
           // avatar gets refreshed each time regardless of how long they were away.
           const icon = user.email && user.image
-            ? (await mirrorAvatarToBlob(user.image, avatarBlobKey(user.email))) ?? user.image
+            ? (await mirrorAvatarToBlob(user.image, await avatarBlobKey(user.email))) ?? user.image
             : user.image;
 
           const res = await fetch(`${BE_URL}/auth/upsert`, {

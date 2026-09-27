@@ -1,11 +1,21 @@
 import { put } from "@vercel/blob";
-import { createHash } from "crypto";
 
 const ALLOWED_HOSTS = /(^|\.)licdn\.com$/;
 
-/** Deterministic blob path per user so re-uploads overwrite instead of accumulating. */
-export function avatarBlobKey(email: string): string {
-  return `avatars/${createHash("sha256").update(email).digest("hex")}.jpg`;
+/**
+ * Deterministic blob path per user so re-uploads overwrite instead of
+ * accumulating. Hashed rather than the raw email because blob URLs are public.
+ *
+ * Uses Web Crypto, not `node:crypto`: `auth.ts` imports this module and
+ * `middleware.ts` wraps `auth()`, so this file is bundled into the Edge
+ * Runtime, where Node built-ins are unavailable.
+ */
+export async function avatarBlobKey(email: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
+  const hex = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `avatars/${hex}.jpg`;
 }
 
 /**
