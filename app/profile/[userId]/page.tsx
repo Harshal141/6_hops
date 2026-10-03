@@ -66,7 +66,7 @@ export default function PublicProfilePage() {
   if (loading) return (
     <GridBackground><Navbar />
       <main className="flex-1 flex flex-col items-center justify-center gap-4">
-        <span className="font-mono text-neutral-400">loading...</span>
+        <span className="font-mono text-neutral-400">Loading...</span>
         <BackButton />
       </main>
     <Footer /></GridBackground>

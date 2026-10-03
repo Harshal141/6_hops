@@ -37,7 +37,7 @@ export function AcceptRequestModal({ requestId, requesterName, onClose }: Accept
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            cancel
+            Cancel
           </Button>
           <Button
             variant="primary"
@@ -45,7 +45,7 @@ export function AcceptRequestModal({ requestId, requesterName, onClose }: Accept
             disabled={!note.trim()}
             loading={accept.isPending}
           >
-            accept
+            Accept
           </Button>
         </>
       }

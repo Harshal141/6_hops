@@ -53,7 +53,7 @@ export function RequestRow({ request }: { request: ConnectionRequest }) {
               {isIncoming ? (
                 <>
                   <Button variant="primary" size="sm" onClick={() => setShowAccept(true)}>
-                    accept
+                    Accept
                   </Button>
                   <Button
                     variant="secondary"
@@ -61,7 +61,7 @@ export function RequestRow({ request }: { request: ConnectionRequest }) {
                     onClick={() => decline.mutate(request.id)}
                     loading={decline.isPending}
                   >
-                    decline
+                    Decline
                   </Button>
                 </>
               ) : (
@@ -71,7 +71,7 @@ export function RequestRow({ request }: { request: ConnectionRequest }) {
                   onClick={() => withdraw.mutate(request.id)}
                   loading={withdraw.isPending}
                 >
-                  withdraw
+                  Withdraw
                 </Button>
               )}
             </div>

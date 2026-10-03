@@ -52,10 +52,10 @@ export function ResumeNudgeModal() {
       footer={
         <>
           <Button variant="ghost" size="sm" onClick={dismiss}>
-            maybe later
+            Maybe later
           </Button>
           <Button variant="primary" size="sm" onClick={fillItOut}>
-            fill it out
+            Fill it out
           </Button>
         </>
       }

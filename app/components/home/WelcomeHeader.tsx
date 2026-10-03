@@ -12,7 +12,7 @@ export function WelcomeHeader({ userName, avatarUrl }: WelcomeHeaderProps) {
   return (
     <div className="flex items-center justify-center gap-4 mb-8">
       <div className="text-center">
-        <p className="font-mono text-neutral-400 text-sm">welcome back,</p>
+        <p className="font-mono text-neutral-400 text-sm">Welcome back,</p>
         <h1 className="font-mono font-bold text-2xl text-neutral-800">
           {firstName}
         </h1>

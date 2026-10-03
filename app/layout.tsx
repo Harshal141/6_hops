@@ -4,6 +4,7 @@ import { checkBE } from "@/lib/service";
 import { SessionProvider } from "./components/layout/SessionProvider";
 import { QueryProvider } from "./components/layout/QueryProvider";
 import { NavigationHistoryProvider } from "@/lib/hooks/navigation";
+import { ToastProvider } from "./components/ui";
 import "./globals.css";
 
 checkBE();
@@ -35,7 +36,9 @@ export default function RootLayout({
       >
         <SessionProvider>
           <QueryProvider>
-            <NavigationHistoryProvider>{children}</NavigationHistoryProvider>
+            <NavigationHistoryProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </NavigationHistoryProvider>
           </QueryProvider>
         </SessionProvider>
       </body>

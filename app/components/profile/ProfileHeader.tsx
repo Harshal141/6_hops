@@ -1,9 +1,8 @@
 "use client";
 
-import { Input } from "../ui";
-
-import Image from "next/image";
+import { Avatar, Input } from "../ui";
 import type { Profile } from "@/lib/hooks/profile";
+import { PROFILE_TEXT } from "./profileText";
 
 type EditableField = "name" | "title" | "location";
 
@@ -16,15 +15,7 @@ interface Props {
 export function ProfileHeader({ view, isEditing, onChange }: Props) {
   return (
     <div className="flex items-start gap-4 sm:gap-6 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-neutral-200">
-      <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-neutral-200 shrink-0">
-        {view.icon ? (
-          <Image src={view.icon} alt={view.name} fill className="object-cover" />
-        ) : (
-          <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
-            <span className="font-mono text-lg sm:text-2xl text-neutral-400">{view.name?.charAt(0) ?? "?"}</span>
-          </div>
-        )}
-      </div>
+      <Avatar src={view.icon} name={view.name} size="xl" />
 
       <div className="flex-1 min-w-0">
         {isEditing ? (
@@ -70,11 +61,11 @@ export function ProfileHeader({ view, isEditing, onChange }: Props) {
           </div>
         ) : (
           <>
-            <h1 className="font-mono font-bold text-xl sm:text-3xl text-neutral-800">{view.name}</h1>
-            <p className="font-mono text-sm sm:text-lg text-neutral-500 mt-1">{view.title}</p>
+            <h1 className="font-mono font-bold text-xl sm:text-2xl text-fg">{view.name}</h1>
+            <p className="font-mono text-sm sm:text-base text-fg-muted mt-1">{view.title}</p>
             {/* email is only returned to the profile's owner, so it is absent when
                 viewing someone else — don't render a dangling separator */}
-            <p className="font-mono text-xs sm:text-sm text-neutral-400 mt-2">
+            <p className={`${PROFILE_TEXT.meta} mt-2`}>
               {[view.location, view.email].filter(Boolean).join(" · ")}
             </p>
           </>

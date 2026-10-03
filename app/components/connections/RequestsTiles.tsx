@@ -30,7 +30,7 @@ export function RequestsTiles({
   return (
     <div className="flex flex-col gap-2">
       <StatTile
-        label="requests"
+        label="Requests"
         count={incomingCount}
         dot="bg-yellow-500"
         badge={incomingCount}
@@ -39,7 +39,7 @@ export function RequestsTiles({
         onClick={() => onSelect(active === "incoming" ? "reachable" : "incoming")}
       />
       <StatTile
-        label="sent"
+        label="Sent"
         count={outgoingCount}
         dot="bg-blue-500"
         isActive={active === "outgoing"}

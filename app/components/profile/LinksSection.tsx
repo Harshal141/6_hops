@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, IconButton, Input } from "../ui";
 import type { Link } from "@/lib/hooks/profile";
+import { PROFILE_TEXT } from "./profileText";
 
 interface Props {
   links: Link[];
@@ -30,7 +31,7 @@ export function LinksSection({ links, isEditing, onChange, onRemove, onAdd }: Pr
 
   return (
     <section className="mb-6 sm:mb-8">
-      <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider mb-3">Links</h2>
+      <h2 className={`${PROFILE_TEXT.sectionHeading} mb-3`}>Links</h2>
 
       {isEditing ? (
         <div className="space-y-2">
@@ -94,7 +95,7 @@ export function LinksSection({ links, isEditing, onChange, onRemove, onAdd }: Pr
             </div>
           ) : (
             <Button variant="secondary" size="sm" onClick={() => setShowAdd(true)}>
-              + add link
+              + Add link
             </Button>
           )}
         </div>
@@ -111,7 +112,7 @@ export function LinksSection({ links, isEditing, onChange, onRemove, onAdd }: Pr
               [{link.type}]
             </a>
           ))}
-          {links.length === 0 && <p className="font-mono text-neutral-300 italic">No links added</p>}
+          {links.length === 0 && <p className={PROFILE_TEXT.empty}>No links added</p>}
         </div>
       )}
     </section>

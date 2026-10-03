@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 interface AvatarProps {
   src?: string | null;
   name: string;
@@ -19,18 +23,25 @@ const TONES = {
   target: "border-blue-300",
 } as const;
 
-/** Avatar with the initials fallback used everywhere an icon may be null. */
+/**
+ * Avatar with the initials fallback used everywhere an icon may be null. Also falls
+ * back when the image fails to load (an expired provider URL), instead of showing the
+ * browser's broken-image icon with the alt text spilling over the circle.
+ */
 export function Avatar({ src, name, size = "md", tone = "default" }: AvatarProps) {
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const image = src && src !== failedSrc ? src : null;
+
   return (
     <div
       className={`${SIZES[size]} ${TONES[tone]} shrink-0 overflow-hidden rounded-full border-2
                  bg-neutral-200 flex items-center justify-center font-mono text-neutral-600`}
     >
-      {src ? (
+      {image ? (
         // avatars come from arbitrary provider hosts (LinkedIn, Google, seeded
         // fixtures), each of which next/image would need whitelisted in config
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={name} className="w-full h-full object-cover" />
+        <img src={image} alt={name} className="w-full h-full object-cover" onError={() => setFailedSrc(image)} />
       ) : (
         (name?.charAt(0).toUpperCase() ?? "?")
       )}

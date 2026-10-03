@@ -85,15 +85,15 @@ export function Coachmark({
 
         <div className="flex justify-end items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onSkip}>
-            skip
+            Skip
           </Button>
           {!isFirst && (
             <Button variant="ghost" size="sm" onClick={onPrevious}>
-              previous
+              Previous
             </Button>
           )}
           <Button variant="primary" size="sm" onClick={onNext}>
-            {isLast ? "done" : "next"}
+            {isLast ? "Done" : "Next"}
           </Button>
         </div>
       </div>

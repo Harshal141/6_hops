@@ -11,7 +11,7 @@ export function ConnectionsBox() {
 
   return (
     <CollapsibleBox
-      title="connections"
+      title="Connections"
       icon={<span>◉</span>}
       defaultOpen={false}
       badge={incomingCount}

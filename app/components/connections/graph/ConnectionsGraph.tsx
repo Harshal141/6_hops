@@ -295,7 +295,7 @@ export function ConnectionsGraph() {
 
   return (
     <div ref={containerRef} className="relative w-full h-[60vh] min-h-[420px] bg-white/80 backdrop-blur-sm border border-neutral-200">
-      {(effectiveLoading || (!effectiveError && !imagesReady)) && <EmptyState message="loading your network..." />}
+      {(effectiveLoading || (!effectiveError && !imagesReady)) && <EmptyState message="Loading your network..." />}
 
       {effectiveError && <EmptyState message={describeError(error)} />}
 
@@ -333,9 +333,9 @@ export function ConnectionsGraph() {
 
       {isReady && isNewUser && (
         <div className="absolute bottom-0 inset-x-0 px-3 py-2 bg-white/90 backdrop-blur-sm border-t border-neutral-200 flex items-center justify-between gap-2">
-          <span className="font-mono text-xs text-neutral-400">start adding connections to connect</span>
+          <span className="font-mono text-xs text-neutral-400">Start adding connections to connect</span>
           <Button variant="secondary" size="sm" onClick={copyInviteLink}>
-            {inviteCopied ? "copied!" : "invite friend"}
+            {inviteCopied ? "Copied!" : "Invite friend"}
           </Button>
         </div>
       )}

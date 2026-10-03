@@ -37,7 +37,7 @@ export function ConnectRequestModal({ targetId, targetName, onClose }: ConnectRe
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>
-            cancel
+            Cancel
           </Button>
           <Button
             variant="primary"
@@ -45,7 +45,7 @@ export function ConnectRequestModal({ targetId, targetName, onClose }: ConnectRe
             disabled={!note.trim()}
             loading={sendRequest.isPending}
           >
-            send request
+            Send request
           </Button>
         </>
       }

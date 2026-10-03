@@ -40,10 +40,10 @@ export function UserCard({
       </div>
       <div className="flex flex-col gap-2 mt-2 w-full">
         {connectionCount !== undefined && (
-          <StatTile label="connections" count={connectionCount} dot="bg-green-500" />
+          <StatTile label="Connections" count={connectionCount} dot="bg-green-500" />
         )}
         {reachableCount !== undefined && (
-          <StatTile label="reachable" count={reachableCount} dot="bg-blue-500" />
+          <StatTile label="Reachable" count={reachableCount} dot="bg-blue-500" />
         )}
       </div>
     </div>
