@@ -24,7 +24,7 @@ export function DiscoverPanel() {
       {/* Header Section */}
       <div className="mb-6">
         <h2 className="font-mono text-lg font-semibold text-neutral-800 mb-1">
-          Discover Connections
+          Discover connections
         </h2>
         <p className="font-mono text-sm text-neutral-500">
           Search for people to connect with
@@ -37,7 +37,7 @@ export function DiscoverPanel() {
           label="Search by name"
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Enter name to search..."
+          placeholder="Enter a name to search..."
           adornment={isLoading ? <span className="animate-spin inline-block">&#9676;</span> : "⌕"}
         />
       </div>
@@ -131,7 +131,7 @@ function SearchResultItem({ user }: { user: SearchUser }) {
             className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
                      hover:border-neutral-800 hover:text-neutral-800 transition-colors"
           >
-            {showPath ? "View path" : "View Profile"}
+            {showPath ? "View path" : "View profile"}
           </Link>
         </div>
       </div>

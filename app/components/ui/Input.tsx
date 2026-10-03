@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 interface InputProps {
   label?: string;
   value: string;
@@ -40,6 +42,7 @@ export function Input({
   adornment,
   ariaLabel,
 }: InputProps) {
+  const errorId = useId();
   const field = (
     <span className="relative block">
       <input
@@ -51,6 +54,7 @@ export function Input({
         disabled={disabled}
         aria-label={label ? undefined : ariaLabel}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         className={`font-mono text-neutral-700 placeholder:text-neutral-400 bg-neutral-50
                   border outline-none transition-colors focus:bg-white disabled:opacity-50
                   ${SIZES[size]} ${fullWidth ? "w-full" : ""} ${adornment ? "pr-10" : ""}
@@ -66,11 +70,19 @@ export function Input({
 
   if (!label && !error) return field;
 
+  // Without a visible label there is nothing to wrap in <label>, and doing so
+  // would nest it inside a caller's own <label>.
+  const Wrapper = label ? "label" : "span";
+
   return (
-    <label className={`block ${fullWidth ? "" : "w-auto"}`}>
+    <Wrapper className={`block ${fullWidth ? "" : "w-auto"}`}>
       {label && <span className="block font-mono text-xs text-neutral-500 mb-2">{label}</span>}
       {field}
-      {error && <span className="block font-mono text-xs text-red-500 mt-1">{error}</span>}
-    </label>
+      {error && (
+        <span id={errorId} className="block font-mono text-xs text-red-500 mt-1">
+          {error}
+        </span>
+      )}
+    </Wrapper>
   );
 }

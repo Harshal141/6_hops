@@ -8,11 +8,11 @@ export function Hero() {
           6 hops
         </h1>
         <p className="text-base sm:text-lg md:text-xl font-mono text-neutral-500 mb-8 md:mb-12 leading-relaxed">
-          discover your connection graph.
+          Discover your connection graph.
           <br />
-          everyone is just 6 hops away.
+          Everyone is just 6 hops away.
         </p>
-        <Button href="/dashboard">[ start discovery ]</Button>
+        <Button href="/dashboard">[ Start discovery ]</Button>
       </div>
     </main>
   );

@@ -23,9 +23,9 @@ export function ConnectionStatusAction({
   onConnect,
   targetName,
 }: ConnectionStatusActionProps) {
-  if (status === "connected") return <Badge tone="success">connected</Badge>;
-  if (status === "outgoing") return <Badge tone="warning">request pending</Badge>;
-  if (status === "incoming") return <Badge tone="warning">wants to connect</Badge>;
+  if (status === "connected") return <Badge tone="success">Connected</Badge>;
+  if (status === "outgoing") return <Badge tone="warning">Request pending</Badge>;
+  if (status === "incoming") return <Badge tone="warning">Wants to connect</Badge>;
 
   return (
     <Button
@@ -34,7 +34,7 @@ export function ConnectionStatusAction({
       onClick={onConnect}
       ariaLabel={targetName ? `Connect with ${targetName}` : undefined}
     >
-      connect
+      Connect
     </Button>
   );
 }

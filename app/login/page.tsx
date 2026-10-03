@@ -15,10 +15,10 @@ export default async function LoginPage({
       <main className="flex-1 flex flex-col items-center justify-center px-8">
         <div className="text-center">
           <h2 className="text-2xl font-mono font-bold text-neutral-800 mb-2">
-            sign in
+            Sign in
           </h2>
           <p className="font-mono text-neutral-400 text-sm mb-10">
-            discover your professional network.
+            Discover your professional network.
           </p>
           <form
             action={async () => {
@@ -26,7 +26,7 @@ export default async function LoginPage({
               await signIn("linkedin", { redirectTo: callbackUrl ?? "/dashboard" });
             }}
           >
-            <FormSubmitButton>[ sign in with linkedin ]</FormSubmitButton>
+            <FormSubmitButton>[ Sign in with LinkedIn ]</FormSubmitButton>
           </form>
         </div>
       </main>

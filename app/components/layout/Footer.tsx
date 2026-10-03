@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Footer() {
   // Derived rather than hardcoded — it was still reading 2025 into the next year.
   const year = new Date().getFullYear();
@@ -12,6 +14,10 @@ export function Footer() {
         </span>
         <span className="hidden sm:inline">|</span>
         <span className="shrink-0">max_hops: 6</span>
+        <span className="hidden sm:inline">|</span>
+        <Link href="/privacy" className="shrink-0 hover:text-neutral-700 transition-colors">
+          Privacy
+        </Link>
       </div>
     </footer>
   );

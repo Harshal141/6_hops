@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { GridBackground, Navbar, Footer } from "../components";
-import { Button } from "../components/ui";
+import { Button, useToast } from "../components/ui";
 import {
   ProfileHeader,
   AboutSection,
@@ -11,6 +11,7 @@ import {
   EducationSection,
   LinksSection,
   SectionOrderPanel,
+  ProfileViewToolbar,
 } from "../components/profile";
 import {
   useProfile, useUpdateProfile,
@@ -18,14 +19,20 @@ import {
   useAddExperience, useUpdateExperience, useDeleteExperience,
   useAddEducation, useUpdateEducation, useDeleteEducation,
   useUpdateUser, useAddSkill, useRemoveSkill,
-  type Profile, type Link, type Experience, type Education, type Skill,
+  type Profile, type Experience, type Education,
   type SectionKey, type SectionConfig,
   DEFAULT_SECTION_CONFIG,
 } from "@/lib/hooks/profile";
-import { useCopyInviteLink } from "@/lib/hooks/useCopyInviteLink";
+import { diffProfile } from "@/lib/utils/profileDiff";
+
+type ListKey = "links" | "experience" | "education";
+
+const changeAt = <T,>(items: T[], index: number, changes: Partial<T>) =>
+  items.map((item, i) => (i === index ? { ...item, ...changes } : item));
+const removeAt = <T,>(items: T[], index: number) => items.filter((_, i) => i !== index);
 
 export default function ProfilePage() {
-  const { data: profile, isLoading, isError } = useProfile();
+  const { data: profile, isLoading, isError, refetch } = useProfile();
 
   const updateUser    = useUpdateUser();
   const updateProfile = useUpdateProfile();
@@ -40,139 +47,75 @@ export default function ProfilePage() {
   const deleteEdu     = useDeleteEducation();
   const addSkill      = useAddSkill();
   const removeSkill   = useRemoveSkill();
+  const toast         = useToast();
 
-  const [isEditing, setIsEditing]   = useState(false);
-  const [edited, setEdited]         = useState<Profile | null>(null);
-  const [saveError, setSaveError]   = useState<string | null>(null);
-
-  // Copies the invite link, not the plain profile link — signups that go
-  // through /invite/<id> get referral-attributed, per prds/referral-signin-redirect.md.
-  const { copied: linkCopied, copy: handleCopyInviteLink } = useCopyInviteLink(profile?.user_id);
+  const [isEditing, setIsEditing] = useState(false);
+  const [edited, setEdited]       = useState<Profile | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [saving, setSaving]       = useState(false);
 
   const sectionConfig: SectionConfig[] = profile?.section_config ?? DEFAULT_SECTION_CONFIG;
   const sectionOrder: SectionKey[]     = sectionConfig.map((s) => s.key);
-
-  // ── Edit mode ──────────────────────────────────────────────
 
   const startEditing = () => {
     if (profile) setEdited(structuredClone(profile));
     setIsEditing(true);
   };
 
-  const cancelEditing = () => {
+  const stopEditing = () => {
     setEdited(null);
     setIsEditing(false);
-    setSaveError(null);
+    setNameError(null);
   };
 
   const handleSave = async () => {
     if (!edited || !profile) return;
-    if (!edited.name.trim()) { setSaveError("Name cannot be empty"); return; }
-    setSaveError(null);
+    if (!edited.name.trim()) { setNameError("Name cannot be empty"); return; }
 
-    const calls: Promise<unknown>[] = [];
+    const diff = diffProfile(profile, edited);
+    setSaving(true);
+    const results = await Promise.allSettled([
+      diff.name !== null && updateUser.mutateAsync({ name: diff.name }),
+      diff.details && updateProfile.mutateAsync(diff.details),
+      ...diff.links.added.map((link) => addLink.mutateAsync(link)),
+      ...diff.links.updated.map((link) => updateLink.mutateAsync(link)),
+      ...diff.links.deleted.map((id) => deleteLink.mutateAsync(id)),
+      ...diff.experience.added.map((exp) => addExperience.mutateAsync(exp)),
+      ...diff.experience.updated.map((exp) => updateExp.mutateAsync(exp)),
+      ...diff.experience.deleted.map((id) => deleteExp.mutateAsync(id)),
+      ...diff.education.added.map((edu) => addEducation.mutateAsync(edu)),
+      ...diff.education.updated.map((edu) => updateEdu.mutateAsync(edu)),
+      ...diff.education.deleted.map((id) => deleteEdu.mutateAsync(id)),
+    ]);
+    setSaving(false);
+    stopEditing();
 
-    if (edited.name !== profile.name) calls.push(updateUser.mutateAsync({ name: edited.name }));
-    calls.push(updateProfile.mutateAsync({ bio: edited.bio, title: edited.title, location: edited.location }));
-
-    profile.links
-      .filter((l) => l.id && !edited.links.find((el) => el.id === l.id))
-      .forEach((l) => calls.push(deleteLink.mutateAsync(l.id!)));
-    edited.links.filter((l) => !l.id).forEach((l) => calls.push(addLink.mutateAsync(l)));
-    edited.links.filter((l) => l.id).forEach((l) => calls.push(updateLink.mutateAsync(l as Link & { id: number })));
-
-    profile.experience
-      .filter((e) => e.id && !edited.experience.find((ee) => ee.id === e.id))
-      .forEach((e) => calls.push(deleteExp.mutateAsync(e.id!)));
-    edited.experience.filter((e) => !e.id).forEach((e) => calls.push(addExperience.mutateAsync(e)));
-    edited.experience.filter((e) => e.id).forEach((e) => calls.push(updateExp.mutateAsync(e as Experience & { id: number })));
-
-    profile.education
-      .filter((e) => e.id && !edited.education.find((ee) => ee.id === e.id))
-      .forEach((e) => calls.push(deleteEdu.mutateAsync(e.id!)));
-    edited.education.filter((e) => !e.id).forEach((e) => calls.push(addEducation.mutateAsync(e)));
-    edited.education.filter((e) => e.id).forEach((e) => calls.push(updateEdu.mutateAsync(e as Education & { id: number })));
-
-    await Promise.all(calls);
-    setEdited(null);
-    setIsEditing(false);
+    // Leaving edit mode on failure too: retrying the same edits would re-add the items that did save.
+    if (results.some((result) => result.status === "rejected")) {
+      refetch();
+      toast("Some changes didn't save. Check your profile and try again.", "error");
+    } else {
+      toast("Profile updated");
+    }
   };
 
-  const isSaving = updateUser.isPending || updateProfile.isPending ||
-    addLink.isPending || deleteLink.isPending ||
-    addExperience.isPending || deleteExp.isPending ||
-    addEducation.isPending || deleteEdu.isPending;
+  const patch = (changes: Partial<Profile>) => setEdited((prev) => prev && { ...prev, ...changes });
+  const updateList = <K extends ListKey>(key: K, update: (items: Profile[K]) => Profile[K]) =>
+    setEdited((prev) => prev && { ...prev, [key]: update(prev[key]) });
 
-  // ── Edited state helpers ───────────────────────────────────
+  const handleLinkAdd = ({ type, url }: { type: string; url: string }) =>
+    updateList("links", (links) => [...links, { type, url, sort_order: links.length }]);
+  const handleExpAdd = () =>
+    updateList("experience", (items) => [...items, { company: "", role: "", started_at: null, ended_at: null, currently_working: false, description: "", sort_order: items.length }]);
+  const handleEduAdd = () =>
+    updateList("education", (items) => [...items, { institution: "", degree: "", year: "", sort_order: items.length }]);
 
-  const e  = edited;
-  const setE = setEdited;
-
-  const updateField = (field: "name" | "title" | "location", value: string) => {
-    if (!e) return;
-    setE({ ...e, [field]: value });
-  };
-
-  // Links
-  const handleLinkChange = (index: number, field: "type" | "url", value: string) => {
-    if (!e) return;
-    const updated = [...e.links];
-    updated[index] = { ...updated[index], [field]: value };
-    setE({ ...e, links: updated });
-  };
-  const handleLinkRemove = (index: number) => {
-    if (!e) return;
-    setE({ ...e, links: e.links.filter((_, i) => i !== index) });
-  };
-  const handleLinkAdd = ({ type, url }: { type: string; url: string }) => {
-    if (!e) return;
-    setE({ ...e, links: [...e.links, { type, url, sort_order: e.links.length }] });
-  };
-
-  // Experience
-  const handleExpAdd = () => {
-    if (!e) return;
-    setE({ ...e, experience: [...e.experience, { company: "", role: "", started_at: null, ended_at: null, currently_working: false, description: "", sort_order: e.experience.length }] });
-  };
-  const handleExpChange = (index: number, field: keyof Experience, value: string | boolean | null) => {
-    if (!e) return;
-    const updated = [...e.experience];
-    updated[index] = { ...updated[index], [field]: value };
-    setE({ ...e, experience: updated });
-  };
-  const handleExpRemove = (index: number) => {
-    if (!e) return;
-    setE({ ...e, experience: e.experience.filter((_, i) => i !== index) });
-  };
-
-  // Education
-  const handleEduAdd = () => {
-    if (!e) return;
-    setE({ ...e, education: [...e.education, { institution: "", degree: "", year: "", sort_order: e.education.length }] });
-  };
-  const handleEduChange = (index: number, field: keyof Education, value: string) => {
-    if (!e) return;
-    const updated = [...e.education];
-    updated[index] = { ...updated[index], [field]: value };
-    setE({ ...e, education: updated });
-  };
-  const handleEduRemove = (index: number) => {
-    if (!e) return;
-    setE({ ...e, education: e.education.filter((_, i) => i !== index) });
-  };
-
-  // Skills (fire immediately — no batching with save)
-  const handleSkillAdd    = (skill: Skill)    => addSkill.mutate(skill);
-  const handleSkillRemove = (skillId: number) => removeSkill.mutate(skillId);
-
-  const view = isEditing ? (e ?? profile!) : profile!;
-
-  // ── Loading / error states ─────────────────────────────────
+  const view = isEditing ? (edited ?? profile!) : profile!;
 
   if (isLoading) return (
     <GridBackground><Navbar />
       <main className="flex-1 flex items-center justify-center">
-        <span className="font-mono text-neutral-400">loading...</span>
+        <span className="font-mono text-neutral-400">Loading...</span>
       </main>
     <Footer /></GridBackground>
   );
@@ -180,31 +123,39 @@ export default function ProfilePage() {
   if (isError || !profile) return (
     <GridBackground><Navbar />
       <main className="flex-1 flex items-center justify-center">
-        <span className="font-mono text-neutral-400">failed to load profile</span>
+        <span className="font-mono text-neutral-400">Failed to load profile</span>
       </main>
     <Footer /></GridBackground>
   );
 
-  // ── Section renderer ───────────────────────────────────────
-
   const renderSection = (key: SectionKey) => {
     switch (key) {
       case "about":
-        return <AboutSection key={key} bio={view.bio} isEditing={isEditing} onChange={(v) => { if (e) setE({ ...e, bio: v }); }} />;
+        return <AboutSection key={key} bio={view.bio} isEditing={isEditing} onChange={(bio) => patch({ bio })} />;
       case "skills":
-        return <SkillsSection key={key} skills={profile.skills} isEditing={isEditing} onAdd={handleSkillAdd} onRemove={handleSkillRemove} />;
+        return <SkillsSection key={key} skills={profile.skills} isEditing={isEditing} onAdd={(skill) => addSkill.mutate(skill)} onRemove={(id) => removeSkill.mutate(id)} />;
       case "experience":
-        return <ExperienceSection key={key} experience={view.experience} isEditing={isEditing} onAdd={handleExpAdd} onChange={handleExpChange} onRemove={handleExpRemove} />;
+        return (
+          <ExperienceSection key={key} experience={view.experience} isEditing={isEditing} onAdd={handleExpAdd}
+            onChange={(index, field, value) => updateList("experience", (items) => changeAt<Experience>(items, index, { [field]: value }))}
+            onRemove={(index) => updateList("experience", (items) => removeAt(items, index))} />
+        );
       case "education":
-        return <EducationSection key={key} education={view.education} isEditing={isEditing} onAdd={handleEduAdd} onChange={handleEduChange} onRemove={handleEduRemove} />;
+        return (
+          <EducationSection key={key} education={view.education} isEditing={isEditing} onAdd={handleEduAdd}
+            onChange={(index, field, value) => updateList("education", (items) => changeAt<Education>(items, index, { [field]: value }))}
+            onRemove={(index) => updateList("education", (items) => removeAt(items, index))} />
+        );
       case "links":
-        return <LinksSection key={key} links={view.links} isEditing={isEditing} onChange={handleLinkChange} onRemove={handleLinkRemove} onAdd={handleLinkAdd} />;
+        return (
+          <LinksSection key={key} links={view.links} isEditing={isEditing} onAdd={handleLinkAdd}
+            onChange={(index, field, value) => updateList("links", (items) => changeAt(items, index, { [field]: value }))}
+            onRemove={(index) => updateList("links", (items) => removeAt(items, index))} />
+        );
       default:
         return null;
     }
   };
-
-  // ── Render ─────────────────────────────────────────────────
 
   return (
     <GridBackground>
@@ -215,47 +166,28 @@ export default function ProfilePage() {
 
             <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-8 flex-1 max-w-3xl">
 
-              {/* View mode — in-flow bar, same treatment as the edit-mode bar below so it
-                  never overlaps the header (name/title can run long, especially on mobile) */}
               {!isEditing && (
-                <div className="flex justify-end gap-2 mb-4">
-                  <Button variant="secondary" size="md" onClick={handleCopyInviteLink}>
-                    <span className="inline-flex items-center gap-1.5">
-                      {linkCopied ? (
-                        <svg aria-hidden viewBox="0 0 24 24" width="14" height="14" fill="none"
-                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : (
-                        <svg aria-hidden viewBox="0 0 24 24" width="14" height="14" fill="none"
-                          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </svg>
-                      )}
-                      {linkCopied ? "copied!" : "invite friend"}
-                    </span>
-                  </Button>
-                  <Button variant="secondary" size="md" onClick={startEditing}>
-                    edit
-                  </Button>
-                </div>
+                <ProfileViewToolbar
+                  userId={profile.user_id}
+                  onEdit={startEditing}
+                  canImport={profile.experience.length === 0 && profile.education.length === 0}
+                />
               )}
 
               {/* Edit mode — in-flow bar so it never overlaps header inputs */}
               {isEditing && (
                 <div className="flex items-center justify-end gap-2 mb-6 pb-4 border-b border-neutral-100">
-                  {saveError && <span className="font-mono text-xs text-red-500 mr-auto">{saveError}</span>}
-                  <Button variant="secondary" size="md" onClick={cancelEditing}>
-                    cancel
+                  {nameError && <span className="font-mono text-xs text-danger mr-auto">{nameError}</span>}
+                  <Button variant="secondary" size="md" onClick={stopEditing} disabled={saving}>
+                    Cancel
                   </Button>
-                  <Button variant="primary" size="md" onClick={handleSave} loading={isSaving}>
-                    save
+                  <Button variant="primary" size="md" onClick={handleSave} loading={saving}>
+                    Save
                   </Button>
                 </div>
               )}
 
-              <ProfileHeader view={view} isEditing={isEditing} onChange={updateField} />
+              <ProfileHeader view={view} isEditing={isEditing} onChange={(field, value) => patch({ [field]: value })} />
 
               {sectionOrder.map((key) => renderSection(key))}
             </div>

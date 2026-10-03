@@ -22,10 +22,10 @@ export function IndirectConnectionsList() {
       <div className="px-4 py-4 border-b border-neutral-200">
         <h3 className="font-mono font-semibold text-neutral-800 flex items-center gap-2">
           <span className="w-2 h-2 bg-blue-500 rounded-full" />
-          reachable
+          Reachable
         </h3>
         <p className="text-xs font-mono text-neutral-400 mt-1">
-          within {DEFAULT_MAX_HOPS} hops of your network
+          Within {DEFAULT_MAX_HOPS} hops of your network
         </p>
         {isReady && (
           <div className="flex gap-4 mt-2 text-xs font-mono text-neutral-400">
@@ -40,14 +40,14 @@ export function IndirectConnectionsList() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {isLoading && <EmptyState message="loading..." />}
+        {isLoading && <EmptyState message="Loading..." />}
 
         {isError && <ReachableError error={error} />}
 
         {isReady && people.length === 0 && (
           <EmptyState
-            message="no one reachable yet"
-            hint="connect with someone first — their network becomes yours"
+            message="No one reachable yet"
+            hint="Connect with someone first. Their network becomes yours."
           />
         )}
 
@@ -70,10 +70,10 @@ export function IndirectConnectionsList() {
 
 function ReachableError({ error }: { error: unknown }) {
   if (error instanceof ApiError && error.isUnauthenticated) {
-    return <EmptyState message="your session expired" hint="reload the page to sign in again" />;
+    return <EmptyState message="Your session expired" hint="Reload the page to sign in again" />;
   }
   if (error instanceof ApiError && error.isBackendUnavailable) {
-    return <EmptyState message="backend unavailable" hint="the API is not responding" />;
+    return <EmptyState message="Backend unavailable" hint="The API is not responding" />;
   }
-  return <EmptyState message="could not load your network" />;
+  return <EmptyState message="Could not load your network" />;
 }

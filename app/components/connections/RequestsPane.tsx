@@ -9,16 +9,16 @@ type Direction = "incoming" | "outgoing";
 
 const COPY: Record<Direction, { heading: string; blurb: string; empty: string; hint: string }> = {
   incoming: {
-    heading: "incoming requests",
-    blurb: "people who want to connect with you",
-    empty: "no incoming requests",
-    hint: "when someone asks to connect, they appear here",
+    heading: "Incoming requests",
+    blurb: "People who want to connect with you",
+    empty: "No incoming requests",
+    hint: "When someone asks to connect, they appear here",
   },
   outgoing: {
-    heading: "sent requests",
-    blurb: "waiting on a reply",
-    empty: "no sent requests",
-    hint: "find someone in discover to send your first",
+    heading: "Sent requests",
+    blurb: "Waiting on a reply",
+    empty: "No sent requests",
+    hint: "Find someone in Discover to send your first",
   },
 };
 
@@ -45,7 +45,7 @@ export function RequestsPane({ direction }: { direction: Direction }) {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {isLoading && <EmptyState message="loading..." />}
+        {isLoading && <EmptyState message="Loading..." />}
 
         {isError && <PaneError error={error} />}
 
@@ -68,10 +68,10 @@ export function RequestsPane({ direction }: { direction: Direction }) {
  */
 function PaneError({ error }: { error: unknown }) {
   if (error instanceof ApiError && error.isUnauthenticated) {
-    return <EmptyState message="your session expired" hint="reload the page to sign in again" />;
+    return <EmptyState message="Your session expired" hint="Reload the page to sign in again" />;
   }
   if (error instanceof ApiError && error.isBackendUnavailable) {
-    return <EmptyState message="backend unavailable" hint="the API is not responding" />;
+    return <EmptyState message="Backend unavailable" hint="The API is not responding" />;
   }
-  return <EmptyState message="could not load requests" />;
+  return <EmptyState message="Could not load requests" />;
 }

@@ -4,6 +4,7 @@ import { Button, Chip } from "../ui";
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchSkills, type Skill } from "@/lib/hooks/profile";
+import { PROFILE_TEXT } from "./profileText";
 
 // ── Skill search input ──────────────────────────────────────
 
@@ -63,7 +64,7 @@ function SkillSearch({ onAdd, onClose, existing }: {
         onClick={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
-        placeholder="search skills..."
+        placeholder="Search skills..."
         className="font-mono text-xs px-3 py-1.5 border border-dashed border-neutral-300 text-neutral-600 bg-transparent focus:border-neutral-400 outline-none w-48"
       />
       {open && visible.length > 0 && (
@@ -105,10 +106,10 @@ export function SkillsSection({ skills, isEditing, onAdd, onRemove }: Props) {
   return (
     <section className="mb-6 sm:mb-8">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-mono font-semibold text-sm text-neutral-400 uppercase tracking-wider">Skills</h2>
+        <h2 className={PROFILE_TEXT.sectionHeading}>Skills</h2>
         {isEditing && !showSearch && (
           <Button variant="secondary" size="sm" onClick={() => setShowSearch(true)}>
-            + add skill
+            + Add skill
           </Button>
         )}
       </div>
@@ -131,7 +132,7 @@ export function SkillsSection({ skills, isEditing, onAdd, onRemove }: Props) {
       </div>
 
       {skills.length === 0 && !isEditing && (
-        <p className="font-mono text-neutral-300 italic">No skills added</p>
+        <p className={PROFILE_TEXT.empty}>No skills added</p>
       )}
     </section>
   );

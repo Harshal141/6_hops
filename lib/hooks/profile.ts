@@ -31,10 +31,17 @@ export interface Experience {
 export interface Education {
   id?: number;
   institution: string;
+  /** "" when the BE sends null. */
   degree: string;
   year: string;
   sort_order: number;
 }
+
+/** Education as the BE sends it, before `normalizeProfile` fills the defaults. */
+type RawEducation = Omit<Education, "degree" | "year"> & {
+  degree: string | null;
+  year: string | number | null;
+};
 
 export interface Skill {
   id: number;
@@ -93,8 +100,9 @@ export const normalizeProfile = (data: Record<string, unknown>): Profile => ({
     description:      e.description ?? "",
     sort_order:       e.sort_order ?? i,
   })),
-  education: ((data.education as Education[]) ?? []).map((e, i) => ({
+  education: ((data.education as RawEducation[]) ?? []).map((e, i) => ({
     ...e,
+    degree:     e.degree ?? "",
     year:       e.year ? String(e.year) : "",
     sort_order: e.sort_order ?? i,
   })),
@@ -103,7 +111,7 @@ export const normalizeProfile = (data: Record<string, unknown>): Profile => ({
 
 // ── Helpers ────────────────────────────────────────────────
 
-const PROFILE_KEY = ["profile"] as const;
+export const PROFILE_KEY = ["profile"] as const;
 
 // apiFetch, the JSON body helper, and the error envelope live in lib/utils/api —
 // they were duplicated here and in connection.ts, which meant profile errors and

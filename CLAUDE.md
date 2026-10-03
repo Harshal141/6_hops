@@ -71,8 +71,10 @@ Today `globals.css` defines only `--background` and `--foreground`, while the ap
 nothing stopping two panels from drifting apart, and nothing that lets the palette change in
 one place.
 
-- Define semantic tokens in `@theme` — surface, border, text-primary, text-muted,
-  text-placeholder, accent, danger, success — and reference those.
+- Define semantic tokens in `@theme` and reference those. Foreground text is `fg-*`
+  (`text-fg`, `text-fg-body`, `text-fg-muted`, `text-fg-subtle`, `text-fg-placeholder`),
+  plus `surface`, `border`, `danger`, `warning`. Use one token per role within a component;
+  don't mix a raw `text-neutral-400` and `text-fg-subtle` for the same thing.
 - `ui/` primitives own the raw Tailwind colour scales. Feature components use the primitives.
 - The app is monospace-first by design. That belongs in a token or a base style, not repeated
   on every element.
@@ -212,9 +214,13 @@ wrote it, not a model.
 
 - **No em dashes or dash-asides** (`text — more text`) in user-facing strings. Split into two
   sentences or drop the aside instead. This does not apply to code comments or internal names.
-- **Casing is deliberate, not incidental.** The app is lowercase mono throughout (`dashboard`,
-  `sign in`, `no connections yet`) — match that voice. Digits/labels like `404` and proper
-  nouns (a person's real name) keep their own casing.
+- **Sentence case everywhere.** Buttons, titles, headings, labels, placeholders, empty states,
+  toasts and errors capitalise the first word only (`Dashboard`, `Sign in`, `No connections
+  yet`, `Import from resume`, `Add to profile`). Proper nouns and acronyms keep their own
+  casing (`LinkedIn`, `PDF`, `AI`, `Google Gemini`, `MB`, a person's real name); digits and
+  labels like `404` stay as they are. Never Title Case (`View Profile`) and never all lowercase.
+- **No CSS casing.** Don't use `uppercase` / `lowercase` / `capitalize` on text: the string in
+  the source is exactly what the user reads, so copy review and tests see the real thing.
 
 ---
 
@@ -226,7 +232,7 @@ Before a frontend change is finished:
 - [ ] Any new primitive lives in `ui/`, is domain-free, and is exported from the barrel.
 - [ ] No hardcoded colour that should be a token.
 - [ ] Nothing copy-pasted between two files — shared logic is in `lib/utils/`.
-- [ ] User-facing copy has no dash-asides and matches the lowercase mono voice (§10).
+- [ ] User-facing copy is sentence case with no dash-asides and no CSS casing (§10).
 - [ ] New API routes use `proxyAuthed`.
 - [ ] The page did not grow past ~150 lines; new UI went into a component.
 - [ ] No `any`. `npm run lint` and `npm run build` both pass.

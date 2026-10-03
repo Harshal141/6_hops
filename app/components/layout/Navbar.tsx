@@ -62,7 +62,7 @@ function NavLinks({ session, onNavigate }: NavLinksProps) {
   if (!session) {
     return (
       <LinkAction onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}>
-        sign in
+        Sign in
       </LinkAction>
     );
   }
@@ -74,14 +74,14 @@ function NavLinks({ session, onNavigate }: NavLinksProps) {
         onClick={onNavigate}
         className="hover:text-neutral-900 transition-colors py-1"
       >
-        dashboard
+        Dashboard
       </Link>
       <Link
         href="/profile"
         onClick={onNavigate}
         className="hover:text-neutral-900 transition-colors py-1"
       >
-        profile
+        Profile
       </Link>
       <LinkAction
         onClick={() => {
@@ -89,7 +89,7 @@ function NavLinks({ session, onNavigate }: NavLinksProps) {
           signOut({ callbackUrl: "/" });
         }}
       >
-        sign out
+        Sign out
       </LinkAction>
     </>
   );

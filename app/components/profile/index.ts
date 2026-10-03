@@ -5,3 +5,4 @@ export { ExperienceSection } from "./ExperienceSection";
 export { EducationSection } from "./EducationSection";
 export { LinksSection } from "./LinksSection";
 export { SectionOrderPanel } from "./SectionOrderPanel";
+export { ProfileViewToolbar } from "./ProfileViewToolbar";

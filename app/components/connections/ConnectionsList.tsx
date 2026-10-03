@@ -15,23 +15,23 @@ export function ConnectionsList() {
       <div className="px-4 py-4 border-b border-neutral-200">
         <h3 className="font-mono font-semibold text-neutral-800 flex items-center gap-2">
           <span className="w-2 h-2 bg-green-500 rounded-full" />
-          connections
+          Connections
         </h3>
-        <p className="text-xs font-mono text-neutral-400 mt-1">people you know directly</p>
+        <p className="text-xs font-mono text-neutral-400 mt-1">People you know directly</p>
         {!isLoading && !isError && (
           <p className="text-xs font-mono text-neutral-400 mt-2">{list.length} total</p>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {isLoading && <EmptyState message="loading..." />}
+        {isLoading && <EmptyState message="Loading..." />}
 
         {isError && <ListError error={error} />}
 
         {!isLoading && !isError && list.length === 0 && (
           <EmptyState
-            message="no connections yet"
-            hint="search for someone in discover to send your first request"
+            message="No connections yet"
+            hint="Search for someone in Discover to send your first request"
           />
         )}
 
@@ -45,12 +45,12 @@ export function ConnectionsList() {
 
 function ListError({ error }: { error: unknown }) {
   if (error instanceof ApiError && error.isUnauthenticated) {
-    return <EmptyState message="your session expired" hint="reload the page to sign in again" />;
+    return <EmptyState message="Your session expired" hint="Reload the page to sign in again" />;
   }
   if (error instanceof ApiError && error.isBackendUnavailable) {
-    return <EmptyState message="backend unavailable" hint="the API is not responding" />;
+    return <EmptyState message="Backend unavailable" hint="The API is not responding" />;
   }
-  return <EmptyState message="could not load connections" />;
+  return <EmptyState message="Could not load connections" />;
 }
 
 function ConnectionRow({ connection }: { connection: Connection }) {
@@ -79,10 +79,10 @@ function ConnectionRow({ connection }: { connection: Connection }) {
               onClick={() => disconnect.mutate(connection.id)}
               loading={disconnect.isPending}
             >
-              confirm
+              Confirm
             </Button>
             <Button variant="secondary" size="sm" onClick={() => setConfirming(false)}>
-              no
+              No
             </Button>
           </div>
         ) : (
@@ -93,7 +93,7 @@ function ConnectionRow({ connection }: { connection: Connection }) {
               onClick={() => setConfirming(true)}
               ariaLabel={`Disconnect from ${connection.other_name}`}
             >
-              disconnect
+              Disconnect
             </Button>
           </div>
         )}

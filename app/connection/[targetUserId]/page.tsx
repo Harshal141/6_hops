@@ -32,7 +32,7 @@ export default function ConnectionPathPage() {
     }
   }, [data, targetUserId, router]);
 
-  if (isLoading) return <Shell><span className="font-mono text-neutral-400">loading...</span></Shell>;
+  if (isLoading) return <Shell><span className="font-mono text-neutral-400">Loading...</span></Shell>;
 
   if (error) {
     const noPath = error instanceof ApiError && error.status === 404;
@@ -42,13 +42,13 @@ export default function ConnectionPathPage() {
           <span className="font-mono text-neutral-400 block mb-4">
             {noPath
               ? "No path to this person within 6 hops"
-              : "backend unavailable"}
+              : "Backend unavailable"}
           </span>
           <Link
             href="/dashboard"
             className="font-mono text-sm text-neutral-600 hover:text-neutral-800 underline"
           >
-            Back to Dashboard
+            Back to dashboard
           </Link>
         </div>
       </Shell>
@@ -71,13 +71,13 @@ export default function ConnectionPathPage() {
             href="/dashboard"
             className="inline-flex items-center gap-2 font-mono text-sm text-neutral-500 hover:text-neutral-800 mb-6 transition-colors"
           >
-            <span>←</span> Back to Dashboard
+            <span>←</span> Back to dashboard
           </Link>
 
           {/* ── Path visualisation ── */}
           <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-6 mb-6">
             <div className="flex items-center justify-between gap-2 flex-wrap mb-4">
-              <h2 className="font-mono font-semibold text-neutral-800">Connection Path</h2>
+              <h2 className="font-mono font-semibold text-neutral-800">Connection path</h2>
               <Badge tone={hops <= 2 ? "success" : hops <= 4 ? "info" : "neutral"}>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-current shrink-0" />
@@ -124,7 +124,7 @@ export default function ConnectionPathPage() {
               {intermediaries.length === 0 ? (
                 <p className="font-mono text-sm text-neutral-600">
                   You are directly connected to{" "}
-                  <span className="font-semibold">{target.name}</span> — just reach out.
+                  <span className="font-semibold">{target.name}</span>. Just reach out.
                 </p>
               ) : (
                 <>
@@ -186,7 +186,7 @@ export default function ConnectionPathPage() {
                     className="px-3 py-1.5 border border-neutral-300 font-mono text-xs text-neutral-600
                              hover:border-neutral-800 hover:text-neutral-800 transition-colors"
                   >
-                    view full profile
+                    View full profile
                   </Link>
                   <ConnectionStatusAction
                     status={status}

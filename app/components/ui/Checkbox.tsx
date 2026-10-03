@@ -15,7 +15,8 @@ export function Checkbox({ label, checked, onChange, disabled = false }: Checkbo
         disabled={disabled}
         className="cursor-pointer accent-neutral-800 disabled:opacity-50"
       />
-      {label}
+      {/* long unbroken labels (a URL) wrap instead of overflowing a narrow screen */}
+      <span className="min-w-0 [overflow-wrap:anywhere]">{label}</span>
     </label>
   );
 }

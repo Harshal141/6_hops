@@ -27,11 +27,11 @@ export default async function Dashboard() {
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
           <ConnectionsBox />
 
-          <CollapsibleBox title="discover" icon={<span>◎</span>} onboardingId="discover">
+          <CollapsibleBox title="Discover" icon={<span>◎</span>} onboardingId="discover">
             <DiscoverPanel />
           </CollapsibleBox>
 
-          <CollapsibleBox title="graph" icon={<span>◈</span>} onboardingId="graph">
+          <CollapsibleBox title="Graph" icon={<span>◈</span>} onboardingId="graph">
             <ConnectionsGraph />
           </CollapsibleBox>
         </div>
