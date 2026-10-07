@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch, jsonBody } from "@/lib/utils/api";
+import { ApiError, apiFetch, jsonBody } from "@/lib/utils/api";
 
 // ── Types ──────────────────────────────────────────────────
 
@@ -163,6 +163,11 @@ export function useSaveProfile() {
     mutationFn: (patch: ProfilePatch) =>
       apiFetch<Record<string, unknown>>("/api/profile", { method: "PATCH", ...json(patch) }),
     onSuccess: (data) => qc.setQueryData(PROFILE_KEY, normalizeProfile(data)),
+    // Refused as stale: the cached profile is the old version, and editing again would reseed
+    // from it and be refused again. Refetch so the next edit starts from what was saved.
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 409) qc.invalidateQueries({ queryKey: PROFILE_KEY });
+    },
   });
 }
 

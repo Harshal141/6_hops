@@ -54,7 +54,15 @@ export default function ProfilePage() {
         return isEditing ? <AboutEditor key={key} /> : <AboutSection key={key} bio={profile.bio} />;
       case "skills":
         // skills save on their own as they are added or removed, not with the form
-        return <SkillsSection key={key} skills={profile.skills} isEditing={isEditing} onAdd={(skill) => addSkill.mutate(skill)} onRemove={(id) => removeSkill.mutate(id)} />;
+        return (
+          <SkillsSection
+            key={key}
+            skills={profile.skills}
+            isEditing={isEditing}
+            onAdd={(skill) => addSkill.mutate(skill, { onError: () => toast("Couldn't add that skill. Try again.", "error") })}
+            onRemove={(id) => removeSkill.mutate(id, { onError: () => toast("Couldn't remove that skill. Try again.", "error") })}
+          />
+        );
       case "experience":
         return isEditing ? <ExperienceEditor key={key} /> : <ExperienceSection key={key} experience={profile.experience} />;
       case "education":

@@ -1,10 +1,6 @@
-import { NextResponse } from "next/server";
-import { beClient } from "@/lib/service";
+import { proxyAuthed } from "@/lib/proxy";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q") ?? "";
-
-  const res = await beClient(`/skill/search?q=${encodeURIComponent(q.trim())}`);
-  return NextResponse.json(await res.json());
+  const q = new URL(request.url).searchParams.get("q") ?? "";
+  return proxyAuthed(`/skill/search?q=${encodeURIComponent(q.trim())}`);
 }

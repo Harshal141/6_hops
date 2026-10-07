@@ -4,7 +4,7 @@ import {
   type FieldError, type FieldPath, type PathValue,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ApiError } from "@/lib/utils/api";
+import { ApiError, SESSION_EXPIRED_COPY } from "@/lib/utils/api";
 import { buildProfilePatch, toProfileForm } from "@/lib/utils/profilePatch";
 import {
   profileFormSchema,
@@ -22,6 +22,7 @@ interface EditorCallbacks {
 
 function saveErrorMessage(err: unknown): string {
   if (!(err instanceof ApiError)) return "Couldn't save your changes. Try again.";
+  if (err.isUnauthenticated) return SESSION_EXPIRED_COPY;
   if (err.status === 409) return "Your profile changed somewhere else. Cancel and edit again to load it.";
   if (err.isBackendUnavailable) return "Couldn't reach the server. Try again.";
   return err.message;

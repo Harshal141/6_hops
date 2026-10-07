@@ -1,6 +1,7 @@
 import type { Experience } from "@/lib/hooks/profile";
 import { ProfileSection } from "./ProfileSection";
 import { PROFILE_TEXT } from "./profileText";
+import { displayExperienceYears } from "@/lib/utils/experienceYears";
 
 export function ExperienceSection({ experience }: { experience: Experience[] }) {
   return (
@@ -13,9 +14,7 @@ export function ExperienceSection({ experience }: { experience: Experience[] }) 
                 {exp.role || <span className="text-fg-placeholder italic">No role</span>}
               </h3>
               <span className={`${PROFILE_TEXT.meta} shrink-0`}>
-                {exp.started_at ? new Date(exp.started_at).getFullYear() : ""}
-                {exp.started_at ? " – " : ""}
-                {exp.currently_working ? "present" : exp.ended_at ? new Date(exp.ended_at).getFullYear() : ""}
+                {displayExperienceYears(exp)}
               </span>
             </div>
             <p className={PROFILE_TEXT.itemSubtitle}>{exp.company}</p>

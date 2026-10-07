@@ -23,10 +23,8 @@ const CALLBACK_URL_COOKIE_NAMES = ["__Secure-authjs.callback-url", "authjs.callb
  * Reads the callback-url cookie Auth.js stores before redirecting to the
  * provider, and extracts the referrer id if it points at `/invite/<id>`.
  *
- * POC per prds/referral-signin-redirect.md Part 2: unconfirmed whether this
- * NextAuth beta version makes the cookie readable from inside the `jwt`
- * callback. Logged below so a real sign-in through `/invite/<id>` can confirm
- * it in the deployment logs.
+ * Confirmed in prod (prds/referral-signin-redirect.md Part 2): this NextAuth
+ * beta does expose the cookie inside the `jwt` callback.
  */
 async function readInviteReferrerId(): Promise<string | null> {
   const store = await cookies();
@@ -36,7 +34,6 @@ async function readInviteReferrerId(): Promise<string | null> {
     if (raw) break;
   }
 
-  console.log("[auth] callback-url cookie during sign-in:", raw ?? "(not set)");
   if (!raw) return null;
 
   try {

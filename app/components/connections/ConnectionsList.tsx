@@ -86,7 +86,8 @@ function ConnectionRow({ connection }: { connection: Connection }) {
             </Button>
           </div>
         ) : (
-          <div className="shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+          <div className="shrink-0 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 transition-opacity">
+            {/* hover-reveal only from md up: touch screens have no hover, so it was never visible */}
             <Button
               variant="ghost"
               size="sm"

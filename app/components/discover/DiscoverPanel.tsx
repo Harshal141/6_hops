@@ -6,6 +6,7 @@ import { useSearchUsers, useHopsTo, profileDestination, needsPathView, type Sear
 import { ConnectRequestModal } from "../connections/ConnectRequestModal";
 import { Avatar, Input } from "../ui";
 import { ConnectionStatusAction } from "../connections/ConnectionStatusAction";
+import { ApiError, SESSION_EXPIRED_COPY } from "@/lib/utils/api";
 
 export function DiscoverPanel() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,7 +18,7 @@ export function DiscoverPanel() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: results, isLoading } = useSearchUsers(debouncedQuery);
+  const { data: results, isLoading, error } = useSearchUsers(debouncedQuery);
 
   return (
     <div className="w-full max-w-4xl">
@@ -60,6 +61,17 @@ export function DiscoverPanel() {
               <SearchResultItem key={user.id} user={user} />
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Search failed: say so, rather than rendering nothing at all */}
+      {debouncedQuery.trim() && error && (
+        <div className="bg-neutral-50 border border-neutral-200 border-dashed py-8 text-center">
+          <p className="font-mono text-sm text-red-500">
+            {error instanceof ApiError && error.isUnauthenticated
+              ? SESSION_EXPIRED_COPY
+              : "Search isn't working right now. Try again in a moment."}
+          </p>
         </div>
       )}
 

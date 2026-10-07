@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { IconButton } from "../ui";
 
@@ -59,7 +60,12 @@ interface NavLinksProps {
 }
 
 function NavLinks({ session, onNavigate }: NavLinksProps) {
+  const pathname = usePathname();
+
   if (!session) {
+    // /login has its own sign-in button, which carries the page's callbackUrl (redirect-back,
+    // invite referral). A second one here that always went to /dashboard silently dropped both.
+    if (pathname === "/login") return null;
     return (
       <LinkAction onClick={() => signIn("linkedin", { callbackUrl: "/dashboard" })}>
         Sign in

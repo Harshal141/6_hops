@@ -1,6 +1,7 @@
 import type { Link } from "@/lib/hooks/profile";
 import { ProfileSection } from "./ProfileSection";
 import { PROFILE_TEXT } from "./profileText";
+import { LINK_TYPE_LABELS, toLinkType } from "@/lib/schemas/profile";
 
 export function LinksSection({ links }: { links: Link[] }) {
   return (
@@ -14,7 +15,7 @@ export function LinksSection({ links }: { links: Link[] }) {
             rel="noopener noreferrer"
             className="font-mono text-sm text-neutral-600 hover:text-neutral-800 transition-colors"
           >
-            [{link.type}]
+            [{LINK_TYPE_LABELS[toLinkType(link.type)]}]
           </a>
         ))}
         {links.length === 0 && <p className={PROFILE_TEXT.empty}>No links added</p>}
