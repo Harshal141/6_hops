@@ -2,11 +2,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, ApiError, jsonBody } from "@/lib/utils/api";
 import { CLIENT_TIMEOUT_CODE } from "@/lib/utils/resumeImportErrors";
 import { normalizeProfile, PROFILE_KEY } from "@/lib/hooks/profile";
+import type { LinkType } from "@/lib/schemas/profile";
 
 // ── Types: the BE contract ─────────────────────────────────
 
 export type DatePrecision = "year" | "month";
-export type DraftLinkType = "linkedin" | "github" | "twitter" | "portfolio" | "other";
+/** The BE's link allowlist; the import draft only ever uses these. */
+export type DraftLinkType = LinkType;
 
 interface DraftItemMeta {
   /** Stable per draft. */

@@ -13,6 +13,7 @@ export { IconButton } from "./IconButton";
 export { Input } from "./Input";
 export { Modal } from "./Modal";
 export { NotificationBadge } from "./NotificationBadge";
+export { Select } from "./Select";
 export { Spinner } from "./Spinner";
 export { StatTile } from "./StatTile";
 export { Textarea } from "./Textarea";

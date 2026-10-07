@@ -20,6 +20,7 @@ export async function GET() {
   return forwardResponse(res);
 }
 
-export async function PUT(request: Request) {
-  return proxyAuthed("/profile", jsonInit("PUT", await request.json()));
+// The editor's one save: every change in one atomic request. See ProfilePatch for the body.
+export async function PATCH(request: Request) {
+  return proxyAuthed("/profile", jsonInit("PATCH", await request.json()));
 }

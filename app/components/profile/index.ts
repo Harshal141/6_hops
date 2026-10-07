@@ -1,8 +1,15 @@
 export { ProfileHeader } from "./ProfileHeader";
+export { ProfileHeaderFields } from "./ProfileHeaderFields";
+export { ProfileEditToolbar } from "./ProfileEditToolbar";
+export { ProfileSection } from "./ProfileSection";
 export { AboutSection } from "./AboutSection";
+export { AboutEditor } from "./AboutEditor";
 export { SkillsSection } from "./SkillsSection";
 export { ExperienceSection } from "./ExperienceSection";
+export { ExperienceEditor } from "./ExperienceEditor";
 export { EducationSection } from "./EducationSection";
+export { EducationEditor } from "./EducationEditor";
 export { LinksSection } from "./LinksSection";
+export { LinksEditor } from "./LinksEditor";
 export { SectionOrderPanel } from "./SectionOrderPanel";
 export { ProfileViewToolbar } from "./ProfileViewToolbar";

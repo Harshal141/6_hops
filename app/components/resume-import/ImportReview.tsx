@@ -13,7 +13,7 @@ import {
   type ReviewSection as Section,
   type ReviewState,
 } from "@/lib/utils/resumeImportDraft";
-import type { DraftLinkType } from "@/lib/hooks/resumeImport";
+import { LINK_TYPE_LABELS } from "@/lib/schemas/profile";
 
 const ISSUE_COPY: Record<ReviewIssue["field"], string> = {
   company: "Add a company or untick this one",
@@ -22,14 +22,6 @@ const ISSUE_COPY: Record<ReviewIssue["field"], string> = {
   started_at: "Use a year like 2021 or a month like 2021-03",
   ended_at: "Use a year like 2021 or a month like 2021-03",
   year: "Use a year like 2020 or a range like 2018-2022",
-};
-
-const LINK_NAMES: Record<DraftLinkType, string> = {
-  linkedin: "LinkedIn",
-  github: "GitHub",
-  twitter: "Twitter",
-  portfolio: "Portfolio",
-  other: "Other",
 };
 
 interface Props {
@@ -131,7 +123,7 @@ export function ImportReview({ state, onChange, issues, disabled = false }: Prop
         items={state.links}
         selected={state.selected.links}
         onToggle={toggle("links")}
-        label={(link) => `${LINK_NAMES[link.type]}: ${link.url}`}
+        label={(link) => `${LINK_TYPE_LABELS[link.type]}: ${link.url}`}
         disabled={disabled}
       />
     </div>

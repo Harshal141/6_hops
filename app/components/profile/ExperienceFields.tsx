@@ -105,6 +105,7 @@ export function ExperienceFields({ value, onChange, onRemove, dateInput = "date"
         onChange={(next) => onChange("description", next)}
         placeholder="Description"
         ariaLabel="Description"
+        error={errors.description}
         disabled={disabled}
       />
     </div>

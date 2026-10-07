@@ -60,6 +60,8 @@ export interface Profile {
   bio: string;
   title: string;
   location: string;
+  /** The saved version, sent back with a save so a stale edit is refused. Null before the first save. */
+  updated_at: string | null;
   section_config: SectionConfig[];
   links: Link[];
   experience: Experience[];
@@ -88,6 +90,7 @@ export const normalizeProfile = (data: Record<string, unknown>): Profile => ({
   bio:      (data.bio as string)   ?? "",
   title:    (data.title as string) ?? "",
   location: (data.location as string) ?? "",
+  updated_at: (data.updated_at as string) ?? null,
   section_config: (data.section_config as SectionConfig[]) ?? DEFAULT_SECTION_CONFIG,
   links: ((data.links as Link[]) ?? []).map((l, i) => ({
     ...l, sort_order: l.sort_order ?? i,
@@ -118,123 +121,48 @@ export const PROFILE_KEY = ["profile"] as const;
 // connection errors behaved differently for the same backend response.
 const json = jsonBody;
 
-// ── User ───────────────────────────────────────────────────
-
-export function useUpdateUser() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { name: string }) =>
-      apiFetch("/api/user", { method: "PUT", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
 // ── Profile ────────────────────────────────────────────────
 
 export function useProfile() {
   return useQuery({
     queryKey: PROFILE_KEY,
-    queryFn: async () => {
-      const data = await apiFetch<Record<string, unknown>>("/api/profile");
+    // the signal lets a superseded refetch actually abort instead of still hitting the network
+    queryFn: async ({ signal }) => {
+      const data = await apiFetch<Record<string, unknown>>("/api/profile", { signal });
       if (!data) throw new Error("Profile not found");
       return normalizeProfile(data);
     },
   });
 }
 
-export function useUpdateProfile() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Partial<Pick<Profile, "bio" | "title" | "location" | "section_config">>) =>
-      apiFetch("/api/profile", { method: "PUT", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
+// ── Save ───────────────────────────────────────────────────
+
+type RowPatch<T> = Omit<T, "id" | "sort_order"> & { id?: number };
+
+/**
+ * PATCH /profile. Every key is optional; an absent key is left alone. A list is that section's
+ * final state, in display order: a row with `id` is kept (and updated if it changed), a row
+ * without one is added, and a saved row missing from the list is removed.
+ */
+export interface ProfilePatch {
+  name?: string;
+  title?: string;
+  location?: string;
+  bio?: string;
+  section_config?: SectionConfig[];
+  links?: RowPatch<Link>[];
+  experience?: RowPatch<Experience>[];
+  education?: RowPatch<Education>[];
+  updated_at?: string | null;
 }
 
-// ── Links ──────────────────────────────────────────────────
-
-export function useAddLink() {
+/** One request, all-or-nothing. The response is the saved profile, so there is no refetch. */
+export function useSaveProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<Link, "id">) =>
-      apiFetch("/api/profile/link", { method: "POST", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-export function useUpdateLink() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: Link & { id: number }) =>
-      apiFetch(`/api/profile/link/${id}`, { method: "PUT", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-export function useDeleteLink() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) =>
-      apiFetch(`/api/profile/link/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-// ── Experience ─────────────────────────────────────────────
-
-export function useAddExperience() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Omit<Experience, "id">) =>
-      apiFetch("/api/profile/experience", { method: "POST", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-export function useUpdateExperience() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: Experience & { id: number }) =>
-      apiFetch(`/api/profile/experience/${id}`, { method: "PUT", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-export function useDeleteExperience() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) =>
-      apiFetch(`/api/profile/experience/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-// ── Education ──────────────────────────────────────────────
-
-export function useAddEducation() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Omit<Education, "id">) =>
-      apiFetch("/api/profile/education", { method: "POST", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-export function useUpdateEducation() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: Education & { id: number }) =>
-      apiFetch(`/api/profile/education/${id}`, { method: "PUT", ...json(data) }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
-  });
-}
-
-export function useDeleteEducation() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) =>
-      apiFetch(`/api/profile/education/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: PROFILE_KEY }),
+    mutationFn: (patch: ProfilePatch) =>
+      apiFetch<Record<string, unknown>>("/api/profile", { method: "PATCH", ...json(patch) }),
+    onSuccess: (data) => qc.setQueryData(PROFILE_KEY, normalizeProfile(data)),
   });
 }
 

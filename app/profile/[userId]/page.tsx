@@ -88,15 +88,15 @@ export default function PublicProfilePage() {
   const renderSection = (key: SectionKey) => {
     switch (key) {
       case "about":
-        return profile.bio ? <AboutSection key={key} bio={profile.bio} isEditing={false} onChange={() => {}} /> : null;
+        return profile.bio ? <AboutSection key={key} bio={profile.bio} /> : null;
       case "skills":
         return profile.skills.length > 0 ? <SkillsSection key={key} skills={profile.skills} isEditing={false} onAdd={() => {}} onRemove={() => {}} /> : null;
       case "experience":
-        return profile.experience.length > 0 ? <ExperienceSection key={key} experience={profile.experience} isEditing={false} onAdd={() => {}} onChange={() => {}} onRemove={() => {}} /> : null;
+        return profile.experience.length > 0 ? <ExperienceSection key={key} experience={profile.experience} /> : null;
       case "education":
-        return profile.education.length > 0 ? <EducationSection key={key} education={profile.education} isEditing={false} onAdd={() => {}} onChange={() => {}} onRemove={() => {}} /> : null;
+        return profile.education.length > 0 ? <EducationSection key={key} education={profile.education} /> : null;
       case "links":
-        return profile.links.length > 0 ? <LinksSection key={key} links={profile.links} isEditing={false} onChange={() => {}} onRemove={() => {}} onAdd={() => {}} /> : null;
+        return profile.links.length > 0 ? <LinksSection key={key} links={profile.links} /> : null;
       default:
         return null;
     }
@@ -123,7 +123,7 @@ export default function PublicProfilePage() {
               />
             </div>
 
-            <ProfileHeader view={profile} isEditing={false} onChange={() => {}} />
+            <ProfileHeader profile={profile} />
 
             {hasContent ? (
               sectionOrder.map((key) => renderSection(key))
