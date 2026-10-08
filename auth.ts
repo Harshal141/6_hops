@@ -72,6 +72,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [LinkedIn],
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
+  // Auth.js catches its own errors (e.g. InvalidCheck on a callback that lost its
+  // state cookie) and only logs them as plain strings. Logging the Error object
+  // instead lets Sentry's console capture report it with its type and stack.
+  logger: {
+    error(error) {
+      console.error("[auth][error]", error);
+    },
+  },
   callbacks: {
     async jwt({ token, user, account }) {
       // only runs on first sign-in — upsert user in BE and store DB id in token

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # next-generated route types
 /types/
+
+# Sentry Config File
+.env.sentry-build-plugin

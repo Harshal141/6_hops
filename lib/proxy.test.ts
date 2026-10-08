@@ -52,10 +52,14 @@ describe("proxyAuthed", () => {
     expect(await res.json()).toEqual({ error: "upstream_error", code: "upstream_timeout" });
   });
 
-  it("turns an unreachable BE into a 503", async () => {
-    beClient.mockRejectedValue(new TypeError("fetch failed"));
+  it("turns an unreachable BE into a 503, and logs it so Sentry captures it", async () => {
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    const cause = new TypeError("fetch failed");
+    beClient.mockRejectedValue(cause);
     const res = await proxyAuthed("/x");
     expect(res.status).toBe(503);
+    expect(logged).toHaveBeenCalledWith(expect.stringContaining("BE unreachable on /x"), cause);
+    logged.mockRestore();
   });
 
   it("passes a 204 through with no body", async () => {

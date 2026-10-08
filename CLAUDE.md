@@ -187,7 +187,11 @@ correct. State that two siblings need is lifted to the page, not duplicated.
 The backend guarantees these — see `service_hops/CLAUDE.md` §8.
 
 - **Error envelope:** `{ "error": "<message>" }`. Handle it in one place (`lib/utils/api.ts`),
-  not per hook.
+  not per hook. It may also carry `trace_id` (the BE's Sentry trace), exposed as
+  `ApiError.traceId`.
+- **Error tracking:** Sentry (`instrumentation.ts`, `instrumentation-client.ts`, options in
+  `lib/utils/sentry.ts`). Every `console.error`, on server and client, becomes a Sentry
+  event, so log errors rather than calling Sentry directly.
 - **Status codes:** 401 unauthenticated · 403 forbidden · 404 missing · 409 conflict ·
   400 bad input · 503 backend unreachable. The UI should distinguish at least
   unauthenticated, forbidden, not-found, and unavailable — they are different screens.
@@ -203,6 +207,8 @@ The backend guarantees these — see `service_hops/CLAUDE.md` §8.
 - `NEXT_PUBLIC_BE_URL` — single backend URL for all environments.
 - `NEXT_PUBLIC_APP_ENV` — `stage` | `prod`, drives the `X-Env` header. **Fallback is always
   `stage`**, never prod.
+- `NEXT_PUBLIC_SENTRY_DSN` — Sentry is off without it. `SENTRY_AUTH_TOKEN` — build-time
+  source map upload (secret).
 - New env vars are added to `.env.example` in the same change.
 
 ---

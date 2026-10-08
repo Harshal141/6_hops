@@ -82,4 +82,20 @@ describe("apiFetch", () => {
     const err = await caught(apiFetch("/api/x"));
     expect(err.message).toBe("Request failed (502)");
   });
+  it("carries the BE trace id from the envelope, falling back to the X-Trace-Id header", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonResponse(500, { error: "Internal error", trace_id: "abc123" })),
+    );
+    expect((await caught(apiFetch("/api/x"))).traceId).toBe("abc123");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(new Response("", { status: 502, headers: { "X-Trace-Id": "def456" } })),
+    );
+    expect((await caught(apiFetch("/api/x"))).traceId).toBe("def456");
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(404, { error: "Nope" })));
+    expect((await caught(apiFetch("/api/x"))).traceId).toBeUndefined();
+  });
 });

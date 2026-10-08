@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { beClient } from "@/lib/service";
@@ -27,10 +28,14 @@ export async function proxyAuthed(path: string, init: RequestInit = {}) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Only the id, never email or name: enough to see who an error affected.
+  Sentry.setUser({ id: session.user.id });
+
   let res: Response;
   try {
     res = await beClient(path, init);
-  } catch {
+  } catch (err) {
+    console.error(`[proxy] BE unreachable on ${path}:`, err);
     return NextResponse.json({ error: "backend_unavailable" }, { status: 503 });
   }
   return forwardResponse(res);

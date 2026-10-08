@@ -28,6 +28,10 @@ const SECTIONS: { heading: string; body: React.ReactNode }[] = [
     body: "Our database (Neon) and hosting (Vercel).",
   },
   {
+    heading: "Error reports",
+    body: "When something breaks, we send a report to Sentry so we can fix it. It includes your account ID, your browser and device, and the page you were on. It doesn't include your name, email or password.",
+  },
+  {
     heading: "Deleting your data",
     body: (
       <>

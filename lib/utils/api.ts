@@ -11,12 +11,15 @@ export class ApiError extends Error {
   status: number;
   /** Machine-readable reason from the envelope, when the server sent one. */
   code?: string;
+  /** The BE's trace id for the failed request: search it in Sentry to find the BE side. */
+  traceId?: string;
 
-  constructor(status: number, message: string, code?: string) {
+  constructor(status: number, message: string, code?: string, traceId?: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     if (code !== undefined) this.code = code;
+    if (traceId !== undefined) this.traceId = traceId;
   }
 
   /** No usable session. The caller should re-authenticate rather than retry. */
@@ -44,15 +47,18 @@ async function errorFrom(res: Response): Promise<ApiError> {
     parsed = null;
   }
 
+  const headerTraceId = res.headers.get("x-trace-id") || undefined;
+
   if (parsed && typeof parsed === "object") {
-    const { error, code } = parsed as { error?: unknown; code?: unknown };
+    const { error, code, trace_id } = parsed as { error?: unknown; code?: unknown; trace_id?: unknown };
     return new ApiError(
       res.status,
       typeof error === "string" && error ? error : statusMessage(res),
       typeof code === "string" && code ? code : undefined,
+      typeof trace_id === "string" && trace_id ? trace_id : headerTraceId,
     );
   }
-  return new ApiError(res.status, statusMessage(res));
+  return new ApiError(res.status, statusMessage(res), undefined, headerTraceId);
 }
 
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
