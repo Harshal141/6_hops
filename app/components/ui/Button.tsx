@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "hero";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "hero" | "social";
 type Size = "sm" | "md" | "lg";
 
 export interface ButtonProps {
@@ -14,6 +14,10 @@ export interface ButtonProps {
   type?: "button" | "submit" | "reset";
   /** Accessible name when the visible label is not descriptive on its own. */
   ariaLabel?: string;
+  /** Leading mark, e.g. a provider logo. Decorative: give it an empty alt. */
+  icon?: React.ReactNode;
+  /** Stretch to the container's width. */
+  fullWidth?: boolean;
 }
 
 const VARIANTS: Record<Variant, string> = {
@@ -23,6 +27,16 @@ const VARIANTS: Record<Variant, string> = {
   danger: "bg-red-600 text-white border border-red-600 hover:bg-red-500",
   // the offset-border treatment used by the landing and login CTAs
   hero: "bg-neutral-800 text-white hover:bg-neutral-700",
+  // Third-party sign-in ("Sign in with Google"). Not the app's look on purpose: these values
+  // are Google's Sign in with Google spec (dark theme, Web), required for brand verification.
+  // Fill #131314, 1px stroke #8E918F, text #E3E3E3, Google Sans Medium 14/20, 10px logo to
+  // text, at least 12px each side. 52px tall (scaled up from 40, which the spec allows) to
+  // match `hero lg`, so it carries the same weight as the button beside it.
+  // See prds/google-oauth-identity-linking.md §5.6.1 before changing any of it.
+  social:
+    "bg-[#131314] text-[#E3E3E3] border border-[#8E918F] hover:bg-[#2A2A2C] h-13 px-4 gap-2.5 " +
+    "text-sm leading-5 font-medium font-[family-name:var(--font-google-sans)] " +
+    "inline-flex items-center justify-center",
 };
 
 const SIZES: Record<Size, string> = {
@@ -41,30 +55,45 @@ export function Button({
   href,
   type,
   ariaLabel,
+  icon,
+  fullWidth = false,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const isSocial = variant === "social";
 
   const className = [
-    "font-mono transition-colors cursor-pointer inline-block relative",
+    // social carries its own font, box and layout (brand spec), so none of the shared ones apply
+    isSocial ? "" : "font-mono inline-block",
+    "transition-colors cursor-pointer relative",
     VARIANTS[variant],
-    SIZES[size],
+    isSocial ? "" : SIZES[size],
+    fullWidth ? "w-full" : "",
     isDisabled ? "opacity-50 cursor-not-allowed" : "",
     variant === "hero" ? "group transition-all duration-200" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
+  const label = icon ? (
+    <>
+      <span className="inline-flex shrink-0">{icon}</span>
+      <span>{children}</span>
+    </>
+  ) : (
+    children
+  );
+
   const content =
     variant === "hero" ? (
       <>
-        <span className="relative z-10">{children}</span>
+        <span className="relative z-10">{label}</span>
         <div
           className="absolute inset-0 border border-neutral-800 translate-x-1 translate-y-1 -z-10
                    group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-transform"
         />
       </>
     ) : (
-      children
+      label
     );
 
   if (href && !isDisabled) {
@@ -84,7 +113,8 @@ export function Button({
       aria-busy={loading || undefined}
       className={className}
     >
-      {loading ? "…" : content}
+      {/* A brand button keeps its logo and text while pending: the spec has no loading state. */}
+      {loading && !isSocial ? "…" : content}
     </button>
   );
 }

@@ -8,12 +8,12 @@ export const metadata: Metadata = {
 
 const CONTACT_EMAIL = "harshalmukundapatil@gmail.com";
 // The "Changes" section promises this moves whenever the text does.
-const LAST_UPDATED = "2 October 2026";
+const LAST_UPDATED = "10 October 2026";
 
 const SECTIONS: { heading: string; body: React.ReactNode }[] = [
   {
     heading: "What we collect",
-    body: "Your LinkedIn sign-in details (name, email, photo), what you add to your profile, your connections, and if you import a resume, the text we pull out of it.",
+    body: "Your LinkedIn or Google sign-in details (name, email, photo), what you add to your profile, your connections, and if you import a resume, the text we pull out of it.",
   },
   {
     heading: "Resume imports",

@@ -1,23 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { checkBE } from "@/lib/service";
 import { SessionProvider } from "./components/layout/SessionProvider";
 import { QueryProvider } from "./components/layout/QueryProvider";
 import { NavigationHistoryProvider } from "@/lib/hooks/navigation";
 import { ToastProvider } from "./components/ui";
+import { fontVariables } from "./appFonts";
 import "./globals.css";
 
 checkBE();
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "6 Hops",
@@ -31,9 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${fontVariables} antialiased`}>
         <SessionProvider>
           <QueryProvider>
             <NavigationHistoryProvider>

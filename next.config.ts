@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "media.licdn.com" },
       { protocol: "https", hostname: "*.licdn.com" },
+      // Google profile photos (lh3…lh6). Normally mirrored to Blob at sign-in; this covers the
+      // fallback when the mirror fails (e.g. no BLOB_READ_WRITE_TOKEN locally).
+      { protocol: "https", hostname: "*.googleusercontent.com" },
       { protocol: "https", hostname: "*.public.blob.vercel-storage.com" },
     ],
   },

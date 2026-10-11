@@ -1,28 +1,20 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
-import { useEffect } from "react";
-import { Button } from "./components/ui";
+import { ErrorScreen, Footer, GridBackground } from "./components/layout";
+import { fontVariables } from "./appFonts";
 import "./globals.css";
 
-// Replaces the root layout when rendering itself crashes, so it renders its own
-// <html> and cannot use the layout's providers. Without it, React render errors
-// never reach Sentry.
-export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
-
+// Replaces the root layout when the layout itself crashes, so it renders its own <html> with
+// the app's fonts, and can't use the layout's providers: no Navbar here, it needs the session.
+// Crashes inside a page are handled by app/error.tsx, which keeps the layout.
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="en">
-      <body className="antialiased">
-        <main className="min-h-dvh flex flex-col items-center justify-center px-4 text-center gap-6 font-mono">
-          <h1 className="text-2xl sm:text-3xl font-bold text-fg">Something went wrong</h1>
-          <p className="text-sm text-fg-muted max-w-sm leading-relaxed">
-            We&apos;ve been notified. Try again in a moment.
-          </p>
-          <Button href="/">[ Back to home ]</Button>
-        </main>
+      <body className={`${fontVariables} antialiased`}>
+        <GridBackground>
+          <ErrorScreen error={error} reset={reset} />
+          <Footer />
+        </GridBackground>
       </body>
     </html>
   );

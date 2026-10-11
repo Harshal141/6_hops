@@ -1,0 +1,14 @@
+{
+  "iss": "https://www.linkedin.com/oauth",
+  "aud": "test-client-id",
+  "iat": 1791620000,
+  "exp": 1791623600,
+  "sub": "782bbtaQ",
+  "name": "Ada Lovelace",
+  "given_name": "Ada",
+  "family_name": "Lovelace",
+  "picture": "https://media.licdn.com/dms/image/v2/fake/profile-displayphoto-shrink_100_100/0?e=1800000000&v=beta&t=fake",
+  "email": "  Ada.Lovelace@Example.com ",
+  "email_verified": "true",
+  "locale": "en-US"
+}

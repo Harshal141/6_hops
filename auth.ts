@@ -1,6 +1,11 @@
 import NextAuth, { DefaultSession } from "next-auth";
-import LinkedIn from "next-auth/providers/linkedin";
 import { cookies } from "next/headers";
+import { enabledAdapters, adapterFor, isProviderId } from "@/lib/auth/providers/registry";
+import { backendSignIn } from "@/lib/auth/backendSignIn";
+import { inviteReferrerFromPath, readCallbackPath } from "@/lib/auth/callbackUrlCookie";
+import { LAST_USED_COOKIE, lastUsedCookieOptions } from "@/lib/auth/lastUsedProvider";
+import { resolveSafeRedirect } from "@/lib/auth/redirect";
+import type { SignInErrorCode } from "@/lib/auth/signInErrors";
 import { avatarBlobKey, mirrorAvatarToBlob } from "@/lib/utils/avatar";
 
 const BE_URL = process.env.NEXT_PUBLIC_BE_URL!;
@@ -13,65 +18,28 @@ declare module "next-auth" {
   interface Session {
     user: { id: string; handle: string } & DefaultSession["user"];
   }
+  // Set by the signIn callback once the BE has resolved the sign-in, read once by `jwt`.
+  // Without a DB adapter Auth.js passes the same user object to both callbacks.
+  interface User {
+    dbId?: string;
+    handle?: string;
+  }
 }
-
-// https deployments get the __Secure- prefix; http (local dev) does not — same
-// pattern lib/service.ts uses for the session-token cookie.
-const CALLBACK_URL_COOKIE_NAMES = ["__Secure-authjs.callback-url", "authjs.callback-url"];
 
 /**
- * Reads the callback-url cookie Auth.js stores before redirecting to the
- * provider, and extracts the referrer id if it points at `/invite/<id>`.
- *
- * Confirmed in prod (prds/referral-signin-redirect.md Part 2): this NextAuth
- * beta does expose the cookie inside the `jwt` callback.
+ * Where a refused sign-in lands. The `redirect` callback lets `/login?error=` through. The
+ * original destination isn't put in the URL: the login page restores it from Auth.js's
+ * callback-url cookie, which covers Auth.js's own error redirects too.
  */
-async function readInviteReferrerId(): Promise<string | null> {
-  const store = await cookies();
-  let raw: string | undefined;
-  for (const name of CALLBACK_URL_COOKIE_NAMES) {
-    raw = store.get(name)?.value;
-    if (raw) break;
-  }
-
-  if (!raw) return null;
-
-  try {
-    // The cookie value may be absolute (Auth.js's own origin) or relative — the
-    // base below is only ever used to make a relative value parseable, its
-    // value is otherwise irrelevant since only the pathname is read.
-    const pathname = new URL(raw, "http://internal.invalid").pathname;
-    const match = pathname.match(/^\/invite\/([^/]+)$/);
-    return match ? decodeURIComponent(match[1]) : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Same-origin allowlist for the post-sign-in redirect — Auth.js's recommended pattern. */
-function resolveSafeRedirect(url: string, baseUrl: string): string {
-  let target: string;
-  if (url.startsWith("/") && !url.startsWith("//")) {
-    target = `${baseUrl}${url}`;
-  } else {
-    try {
-      target = new URL(url).origin === new URL(baseUrl).origin ? url : baseUrl;
-    } catch {
-      target = baseUrl;
-    }
-  }
-
-  const { pathname } = new URL(target);
-  if (pathname === "/login" || pathname === "/") {
-    return `${baseUrl}/dashboard`;
-  }
-  return target;
-}
+const signInErrorPath = (code: SignInErrorCode, provider: string) =>
+  `/login?${new URLSearchParams({ error: code, provider })}`;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [LinkedIn],
+  providers: enabledAdapters().map((adapter) => adapter.authjs()),
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  // Auth.js's own failures (cancelled consent, lost state cookie) land on the login page too,
+  // which maps their type to a message (lib/auth/signInErrors.ts).
+  pages: { signIn: "/login", error: "/login" },
   // Auth.js catches its own errors (e.g. InvalidCheck on a callback that lost its
   // state cookie) and only logs them as plain strings. Logging the Error object
   // instead lets Sentry's console capture report it with its type and stack.
@@ -81,57 +49,53 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   callbacks: {
-    async jwt({ token, user, account }) {
-      // only runs on first sign-in — upsert user in BE and store DB id in token
-      if (account && user) {
-        try {
-          const referredBy = await readInviteReferrerId();
+    // Resolves the sign-in with the BE (prds/google-oauth-identity-linking.md §5.5). This is
+    // the callback whose string return Auth.js turns into a redirect, so a refused sign-in can
+    // reach /login with a specific error code; an error thrown from `jwt` would be flattened
+    // to a generic "Configuration" page.
+    async signIn({ user, account, profile }) {
+      const provider = account?.provider;
+      if (!isProviderId(provider) || !profile) return signInErrorPath("signin_failed", "");
 
-          // LinkedIn's photo URL is signed and expires (the `e=` query param) —
-          // storing it directly means the avatar 403s once that time passes.
-          // Copy it into Blob storage, which doesn't expire, instead. Runs on
-          // every sign-in (not just account creation), so a returning user's
-          // avatar gets refreshed each time regardless of how long they were away.
-          const icon = user.email && user.image
-            ? (await mirrorAvatarToBlob(user.image, await avatarBlobKey(user.email))) ?? user.image
-            : user.image;
+      const adapter = adapterFor(provider);
+      const identity = adapter.toIdentity(profile);
+      if (!identity) {
+        console.error(`[auth] ${provider} sign-in returned no subject or email`);
+        return signInErrorPath("signin_failed", provider);
+      }
 
-          const res = await fetch(`${BE_URL}/auth/upsert`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Env": ENV,
-              // This endpoint runs before a session exists, so it is gated on a
-              // shared secret instead of a session token.
-              "X-Internal-Secret": process.env.INTERNAL_API_SECRET ?? "",
-            },
-            body: JSON.stringify({
-              name: user.name,
-              email: user.email,
-              icon,
-              ...(referredBy ? { referredBy } : {}),
-            }),
-          });
+      const { avatarUrl, ...rest } = identity;
+      // Mirrors on every sign-in, so a returning user's avatar is refreshed too. Falls back to
+      // the provider URL if the copy fails rather than leaving the user without one.
+      const icon = avatarUrl
+        ? (await mirrorAvatarToBlob(avatarUrl, await avatarBlobKey(provider, identity.subject), adapter.avatarHosts)) ?? avatarUrl
+        : null;
+      // Confirmed in prod (prds/referral-signin-redirect.md Part 2): this NextAuth beta
+      // exposes the callback-url cookie inside its callbacks.
+      const referredBy = inviteReferrerFromPath(await readCallbackPath());
 
-          if (!res.ok) {
-            throw new Error(`auth/upsert failed with ${res.status}`);
-          }
-          const dbUser = await res.json();
-          if (!dbUser?.id) {
-            throw new Error("auth/upsert returned no user id");
-          }
-          token.id = dbUser.id;
-          token.handle = dbUser.user_id;
-        } catch (err) {
-          // Fail sign-in loudly. A token without `id` is rejected by the BE, so
-          // swallowing this would leave the user "logged in" with every API call
-          // returning 401 and no way to tell why. Logged here (with the real
-          // cause — including network-level failures fetch() itself throws,
-          // e.g. BE unreachable) because Auth.js's own error page only ever
-          // shows a generic error code, not this message.
-          console.error("[auth] upsert failed during sign-in:", err);
-          throw new Error("auth/upsert failed");
-        }
+      const result = await backendSignIn(
+        { ...rest, icon, ...(referredBy ? { referredBy } : {}) },
+        { beUrl: BE_URL, env: ENV, internalSecret: process.env.INTERNAL_API_SECRET ?? "" },
+      );
+      if (!result.ok) return signInErrorPath(result.code, provider);
+
+      user.dbId = result.user.id;
+      user.handle = result.user.handle;
+      // The session's `image` (Auth.js copies user.image into the token right after this) is
+      // the avatar we stored, not the provider's raw photo URL: a mirrored Blob URL that
+      // doesn't expire, and for a linked user the same avatar whichever provider they used.
+      user.image = result.user.icon ?? user.image;
+      // This runs inside Auth.js's callback route handler, so the cookie rides on its response.
+      // Secure everywhere except `next dev` on http://localhost.
+      (await cookies()).set(LAST_USED_COOKIE, provider, lastUsedCookieOptions(process.env.NODE_ENV === "production"));
+      return true;
+    },
+    async jwt({ token, user }) {
+      // `user` is only present on the sign-in request, right after signIn accepted it.
+      if (user?.dbId) {
+        token.id = user.dbId;
+        token.handle = user.handle;
       }
       token.env = TOKEN_ENV;
       return token;
