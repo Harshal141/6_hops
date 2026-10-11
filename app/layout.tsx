@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { checkBE } from "@/lib/service";
 import { SessionProvider } from "./components/layout/SessionProvider";
 import { QueryProvider } from "./components/layout/QueryProvider";
@@ -47,6 +48,7 @@ export default function RootLayout({
             </NavigationHistoryProvider>
           </QueryProvider>
         </SessionProvider>
+        <Analytics />
       </body>
     </html>
   );
