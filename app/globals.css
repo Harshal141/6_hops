@@ -51,3 +51,34 @@ body {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Landing page (landing/). Every one runs only under motion-safe. */
+@keyframes exhaust {
+  to { stroke-dashoffset: -12; }
+}
+@keyframes caret-blink {
+  50% { opacity: 0; }
+}
+
+/* landing/demos/OrbitDemo: the ring spins, each face counter-spins to stay upright */
+@keyframes orbit-spin {
+  to { transform: rotateY(360deg); }
+}
+@keyframes orbit-counter {
+  from { transform: rotateY(calc(var(--angle) * -1)); }
+  to { transform: rotateY(calc(var(--angle) * -1 - 360deg)); }
+}
+/* landing/demos/ResumeDemo: a read head passing down the page */
+@keyframes scan {
+  0% { top: 0%; opacity: 0; }
+  10%, 90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+/* landing/demos: a click. Defined only when motion is allowed, so under reduced
+   motion the inline `animation: press …` (demoMotion.pressAt) finds nothing to run. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes press {
+    0%, 100% { transform: scale(1); }
+    40% { transform: scale(0.95); }
+  }
+}

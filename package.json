@@ -27,6 +27,8 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@dicebear/core": "^9.2.4",
+    "@dicebear/notionists": "^9.2.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

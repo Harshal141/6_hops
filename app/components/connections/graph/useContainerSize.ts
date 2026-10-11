@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 
 /** Tracks the pixel size of a container element, for canvas/SVG that need explicit dimensions. */

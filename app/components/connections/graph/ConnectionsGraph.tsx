@@ -1,10 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import * as THREE from "three";
-import type { ForceGraphMethods, ForceGraphProps, LinkObject, NodeObject } from "react-force-graph-3d";
+import type { ForceGraphMethods, NodeObject } from "react-force-graph-3d";
 import { Button, EmptyState } from "../../ui";
 import { NodeHoverCard } from "./NodeHoverCard";
 import { useContainerSize } from "./useContainerSize";
@@ -12,8 +11,10 @@ import { useEgoNetwork, type EgoNetworkPerson } from "@/lib/hooks/connection";
 import { useProfile } from "@/lib/hooks/profile";
 import { useCopyInviteLink } from "@/lib/hooks/useCopyInviteLink";
 import { describeError } from "@/lib/utils/api";
-import { BACKGROUND, LINK_COLOR, RING_COLOR } from "./graphTheme";
+import { BACKGROUND, LINK_COLOR } from "./graphTheme";
 import { buildPreviewNetwork } from "./previewNetwork";
+import { createAvatarSprite } from "./avatarSprite";
+import { forceGraph3DFor, useForceGraphInstanceKey } from "./forceGraph";
 
 const LINK_DISTANCE = 150; // was the library default (~30) — longer lines
 const INITIAL_CAMERA_Z = 260; // start a little zoomed in versus the library's auto-fit
@@ -25,74 +26,9 @@ const AVATAR_LOAD_TIMEOUT_MS = 5000;
 const NODE_WORLD_RADIUS: Record<EgoNetworkPerson["degree"], number> = { 0: 10.5, 1: 7, 2: 4.5 };
 const HOVER_LABEL_GAP = 10; // extra px clearance beyond the projected circle edge
 
-// `next/dynamic` erases the imported component's generics (it falls back to
-// the library's default `{}` node type), so the loaded component is recast
-// to its real, concretely-typed signature for this graph's node shape.
-type ForceGraph3DComponent = (
-  props: ForceGraphProps<NodeObject<EgoNetworkPerson>, LinkObject<EgoNetworkPerson>> & {
-    ref?: React.MutableRefObject<ForceGraphMethods<NodeObject<EgoNetworkPerson>, LinkObject<EgoNetworkPerson>> | undefined>;
-  }
-) => React.ReactElement;
-
-// force-graph touches `window` on import, so it must never run during SSR
-const ForceGraph3D = dynamic(() => import("react-force-graph-3d"), {
-  ssr: false,
-}) as unknown as ForceGraph3DComponent;
-
 type GraphNode = NodeObject<EgoNetworkPerson>;
 
-/** A billboarded, circular avatar sprite — always faces the camera as it orbits. */
-function createAvatarSprite(
-  img: HTMLImageElement | undefined,
-  degree: EgoNetworkPerson["degree"],
-  name: string
-): THREE.Sprite {
-  const size = 128;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
-
-  const center = size / 2;
-  const r = center - 6;
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(center, center, r, 0, 2 * Math.PI);
-  ctx.fillStyle = "#e5e5e5";
-  ctx.fill();
-  if (img) {
-    ctx.clip();
-    ctx.drawImage(img, center - r, center - r, r * 2, r * 2);
-  } else {
-    // no photo on file — same initial the Avatar primitive falls back to, so
-    // the node reads as "no picture" rather than as a failed image
-    ctx.fillStyle = "#737373";
-    ctx.font = `600 ${Math.round(r)}px ui-monospace, monospace`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(name?.charAt(0).toUpperCase() || "?", center, center);
-  }
-  ctx.restore();
-
-  ctx.beginPath();
-  ctx.arc(center, center, r, 0, 2 * Math.PI);
-  ctx.lineWidth = degree === 0 ? 8 : degree === 1 ? 6 : 4;
-  ctx.strokeStyle = RING_COLOR[degree];
-  ctx.stroke();
-
-  const texture = new THREE.CanvasTexture(canvas);
-  // a link passing directly between the camera and a node's face reads as
-  // "the line is drawn over the photo" — depthTest off + a high renderOrder
-  // makes every photo draw on top of every line, regardless of which is
-  // actually nearer the camera
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
-  const sprite = new THREE.Sprite(material);
-  sprite.renderOrder = 999;
-  const worldSize = degree === 0 ? 21 : degree === 1 ? 14 : 9;
-  sprite.scale.set(worldSize, worldSize, 1);
-  return sprite;
-}
+const ForceGraph3D = forceGraph3DFor<EgoNetworkPerson>();
 
 /**
  * Your 2-degree connections graph, in 3D: you at the center, direct
@@ -108,10 +44,7 @@ export function ConnectionsGraph() {
   const [imagesReady, setImagesReady] = useState(false);
   const [hovered, setHovered] = useState<GraphNode | null>(null);
   const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
-  // bump to force React to fully unmount+remount <ForceGraph3D> — see the
-  // "reappear" note below
-  const [instanceKey, setInstanceKey] = useState(0);
-  const hasMountedRef = useRef(false);
+  const instanceKey = useForceGraphInstanceKey();
 
   const { data: network, isLoading: networkLoading, isError: networkError, error } = useEgoNetwork();
   const { data: profile } = useProfile();
@@ -183,35 +116,6 @@ export function ConnectionsGraph() {
       cancelled = true;
     };
   }, [displayNetwork]);
-
-  // Known upstream issue (vasturiano/react-force-graph#596): Next's
-  // client-side router cache can revive this whole page via React's
-  // "fiber reuse" (Activity) instead of a real unmount+remount. `fgRef`
-  // and our other refs survive that revival, but react-kapsule's own
-  // internal mount guard (`effectCalled.current`) also survives it and
-  // is never reset — so the underlying kapsule's mount effect sees
-  // "already mounted" and skips re-attaching to the (new) DOM node,
-  // even though its destructor already ran and tore the instance down.
-  // Result: a dead instance that either sits inert or, if a stray tick
-  // was still in flight, throws "Cannot read properties of undefined
-  // (reading 'tick')" from deep inside three-forcegraph.
-  //
-  // `hasMountedRef` is set exactly once per *real* mount (a genuine
-  // remount creates a fresh ref, starting back at `false`) — if this
-  // effect's empty-deps body runs again with it already `true`, that's
-  // the telltale sign of a fiber-reuse revival, not a fresh mount. Bump
-  // `instanceKey` so React discards the zombie fiber and gives
-  // `<ForceGraph3D>` a genuinely new one instead of trying to reuse it.
-  useEffect(() => {
-    if (hasMountedRef.current) {
-      // deferred to a microtask (not called directly in the effect body) —
-      // microtasks still drain before the browser's next animation frame,
-      // so this still lands ahead of any stray tick from the zombie instance
-      queueMicrotask(() => setInstanceKey((k) => k + 1));
-      return;
-    }
-    hasMountedRef.current = true;
-  }, []);
 
   // gentler repulsion + longer links than the library defaults, and a
   // closer starting camera. Retries every frame until `fgRef.current` is

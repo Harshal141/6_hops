@@ -18,6 +18,11 @@ export interface ButtonProps {
   icon?: React.ReactNode;
   /** Stretch to the container's width. */
   fullWidth?: boolean;
+  /**
+   * Looks like the button but is not one: no element to focus or click. For
+   * illustrations of the UI, such as the landing page demos.
+   */
+  decorative?: boolean;
 }
 
 const VARIANTS: Record<Variant, string> = {
@@ -57,6 +62,7 @@ export function Button({
   ariaLabel,
   icon,
   fullWidth = false,
+  decorative = false,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const isSocial = variant === "social";
@@ -67,7 +73,7 @@ export function Button({
     "transition-colors cursor-pointer relative",
     VARIANTS[variant],
     isSocial ? "" : SIZES[size],
-    fullWidth ? "w-full" : "",
+    fullWidth ? "w-full text-center" : "",
     isDisabled ? "opacity-50 cursor-not-allowed" : "",
     variant === "hero" ? "group transition-all duration-200" : "",
   ]
@@ -95,6 +101,14 @@ export function Button({
     ) : (
       label
     );
+
+  if (decorative) {
+    return (
+      <span aria-hidden className={`${className} cursor-default`}>
+        {content}
+      </span>
+    );
+  }
 
   if (href && !isDisabled) {
     return (

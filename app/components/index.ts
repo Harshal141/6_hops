@@ -24,7 +24,7 @@ export {
 export { DiscoverPanel } from "./discover";
 
 // Home components
-export { Hero, WelcomeHeader } from "./home";
+export { WelcomeHeader } from "./home";
 
 // Onboarding components
 export { OnboardingTour, ResumeNudgeModal } from "./onboarding";

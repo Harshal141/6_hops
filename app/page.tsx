@@ -1,11 +1,5 @@
-import { GridBackground, Navbar, Hero, Footer } from "./components";
+import { LandingPage } from "./components/landing";
 
 export default function Home() {
-  return (
-    <GridBackground>
-      <Navbar />
-      <Hero />
-      <Footer />
-    </GridBackground>
-  );
+  return <LandingPage />;
 }
