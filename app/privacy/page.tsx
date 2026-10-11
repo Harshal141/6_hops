@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { GridBackground, Navbar, Footer } from "../components";
 
 export const metadata: Metadata = {
-  title: "Privacy · 6 hops",
+  title: "Privacy",
   description: "What 6 hops collects, how resume imports work, and how to delete your data.",
 };
 
