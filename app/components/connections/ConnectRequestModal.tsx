@@ -9,13 +9,15 @@ interface ConnectRequestModalProps {
   targetId: string;
   targetName: string;
   onClose: () => void;
+  /** Called once the request is accepted by the backend, just before the modal closes. */
+  onSent?: () => void;
 }
 
 /**
  * The "why is this a strong connection" prompt. A request cannot be sent without
  * a note — the backend rejects an empty or whitespace-only one.
  */
-export function ConnectRequestModal({ targetId, targetName, onClose }: ConnectRequestModalProps) {
+export function ConnectRequestModal({ targetId, targetName, onClose, onSent }: ConnectRequestModalProps) {
   const [note, setNote] = useState("");
   const sendRequest = useSendRequest();
 
@@ -23,6 +25,7 @@ export function ConnectRequestModal({ targetId, targetName, onClose }: ConnectRe
     if (!note.trim()) return;
     try {
       await sendRequest.mutateAsync({ addresseeId: targetId, note });
+      onSent?.();
       onClose();
     } catch {
       // surfaced below via sendRequest.error

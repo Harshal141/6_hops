@@ -57,6 +57,7 @@ export function Input({
         aria-describedby={error ? errorId : undefined}
         className={`font-mono text-neutral-700 placeholder:text-neutral-400 bg-neutral-50
                   border outline-none transition-colors focus:bg-white disabled:opacity-50
+                  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
                   ${SIZES[size]} ${fullWidth ? "w-full" : ""} ${adornment ? "pr-10" : ""}
                   ${error ? "border-red-300 focus:border-red-400" : "border-neutral-200 focus:border-neutral-400"}`}
       />

@@ -7,13 +7,25 @@ import {
   ConnectionsGraph,
   WelcomeHeader,
   DiscoverPanel,
+  SetupReminder,
 } from "../components";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { needsOnboarding } from "@/lib/onboardingGate";
+import { LEFT_ONBOARDING_PARAM } from "@/lib/utils/onboarding";
 
-export default async function Dashboard() {
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const session = await auth();
   if (!session) redirect("/login");
+
+  // A new signup sets up first. The param is the way out when leaving setup couldn't be
+  // saved, so a failed write can never bounce the user back into it.
+  const leftOnboarding = (await searchParams)[LEFT_ONBOARDING_PARAM] !== undefined;
+  if (!leftOnboarding && (await needsOnboarding(session.user.id))) redirect("/onboarding");
 
   return (
     <GridBackground>
@@ -35,6 +47,8 @@ export default async function Dashboard() {
             <ConnectionsGraph />
           </CollapsibleBox>
         </div>
+
+        <SetupReminder />
       </main>
       <Footer />
     </GridBackground>

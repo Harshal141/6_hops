@@ -14,21 +14,30 @@ interface Props {
   intro?: string;
   /** Adds a "Fill it in myself" button beside the privacy note. */
   onManual?: () => void;
+  /** Shows "Fill it in myself" but not clickable yet, e.g. while what it opens is loading. */
+  manualDisabled?: boolean;
 }
 
 /** The pick step: one dropzone, then the privacy note and the optional manual way out on one row. */
-export function ImportPick({ onFile, intro, onManual }: Props) {
+export function ImportPick({ onFile, intro, onManual, manualDisabled = false }: Props) {
   const [error, setError] = useState<string | undefined>();
 
   return (
     <div className="space-y-4 font-mono">
       {intro && <p className="text-xs text-fg-muted">{intro}</p>}
 
+      {/* Below `sm` (phones, where there is nothing to drag) the drop line goes and the
+          cue itself says what to pick. */}
       <FileDropzone
         accept="application/pdf,.pdf"
         maxBytes={MAX_PDF_BYTES}
-        label="Drop your PDF here"
-        actionLabel="Choose file"
+        label={<span className="hidden sm:inline">Drop your PDF here</span>}
+        actionLabel={
+          <>
+            <span className="sm:hidden">Choose PDF</span>
+            <span className="hidden sm:inline">Choose file</span>
+          </>
+        }
         hint="PDF · up to 2 MB · 5 pages"
         error={error}
         onReject={(reason) => setError((reason === "too_big" ? IMPORT_ERRORS.file_too_big : IMPORT_ERRORS.not_pdf).message)}
@@ -70,7 +79,7 @@ export function ImportPick({ onFile, intro, onManual }: Props) {
         </p>
 
         {onManual && (
-          <Button variant="secondary" size="sm" onClick={onManual}>
+          <Button variant="link" size="sm" onClick={onManual} disabled={manualDisabled}>
             Fill it in myself
           </Button>
         )}

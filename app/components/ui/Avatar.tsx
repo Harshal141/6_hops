@@ -8,6 +8,8 @@ interface AvatarProps {
   size?: "sm" | "md" | "lg" | "xl";
   /** Ring colour for emphasis — used by the connection-path view. */
   tone?: "default" | "self" | "target";
+  /** The name is already shown beside it: hide the avatar from assistive tech so the name is read once. */
+  decorative?: boolean;
 }
 
 const SIZES = {
@@ -28,12 +30,13 @@ const TONES = {
  * back when the image fails to load (an expired provider URL), instead of showing the
  * browser's broken-image icon with the alt text spilling over the circle.
  */
-export function Avatar({ src, name, size = "md", tone = "default" }: AvatarProps) {
+export function Avatar({ src, name, size = "md", tone = "default", decorative = false }: AvatarProps) {
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const image = src && src !== failedSrc ? src : null;
 
   return (
     <div
+      aria-hidden={decorative || undefined}
       className={`${SIZES[size]} ${TONES[tone]} shrink-0 overflow-hidden rounded-full border-2
                  bg-neutral-200 flex items-center justify-center font-mono text-neutral-600`}
     >
@@ -41,7 +44,7 @@ export function Avatar({ src, name, size = "md", tone = "default" }: AvatarProps
         // avatars come from arbitrary provider hosts (LinkedIn, Google, seeded
         // fixtures), each of which next/image would need whitelisted in config
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt={name} className="w-full h-full object-cover" onError={() => setFailedSrc(image)} />
+        <img src={image} alt={decorative ? "" : name} className="w-full h-full object-cover" onError={() => setFailedSrc(image)} />
       ) : (
         (name?.charAt(0).toUpperCase() ?? "?")
       )}

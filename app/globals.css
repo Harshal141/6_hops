@@ -31,6 +31,14 @@
   --color-fg-placeholder: oklch(87% 0 0);
   --color-danger: oklch(63.7% 0.237 25.331);
   --color-warning: oklch(55.5% 0.163 48.998);
+  /*
+   * The one brand purple: stepper and reminder bars, the "Invited you" badge, the referrer
+   * card, copied states, the accent Button. Use bg-accent / text-accent / border-accent (with
+   * an opacity modifier such as bg-accent/5 for a tint) and never a hardcoded purple.
+   * app/siteMeta.ts repeats the hex for the manifest and OG image, which can't read CSS
+   * variables; app/siteMeta.test.ts fails if the two drift apart.
+   */
+  --color-accent: #6f5ae6;
 }
 
 @media (prefers-color-scheme: dark) {

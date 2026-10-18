@@ -2,14 +2,14 @@
 
 import { useRef } from "react";
 
-type Tone = "solid" | "glass";
-type Padding = "none" | "md" | "lg";
+type Tone = "solid" | "glass" | "accent";
+type Padding = "none" | "sm" | "md" | "lg";
 
 interface CardProps {
   children: React.ReactNode;
   header?: React.ReactNode;
   footer?: React.ReactNode;
-  /** `glass` lets what is behind the card show through, blurred. */
+  /** `glass` lets what is behind the card show through, blurred. `accent` is a solid card with the brand-purple border, for the one item a view emphasises. */
   tone?: Tone;
   padding?: Padding;
   /** The house offset border, the same one the hero CTA and stat tiles carry. */
@@ -25,10 +25,12 @@ interface CardProps {
 const TONES: Record<Tone, string> = {
   solid: "bg-white/90 backdrop-blur-sm border-neutral-200",
   glass: "bg-white/40 backdrop-blur-md border-white shadow-[0_8px_40px_-12px_rgb(0_0_0/0.18)]",
+  accent: "bg-white border-accent",
 };
 
 const PADDING: Record<Padding, string> = {
   none: "",
+  sm: "p-3 sm:p-3.5",
   md: "p-4 sm:p-5",
   lg: "p-6 sm:p-10",
 };

@@ -11,9 +11,16 @@ interface ModalProps {
   footer?: React.ReactNode;
   /** Off: backdrop, Escape and × can't close it, so a stray click can't lose the step. */
   dismissible?: boolean;
+  /** Off: only Escape and × close it, so a stray click outside a long form can't discard it. */
+  closeOnBackdrop?: boolean;
   size?: "md" | "lg";
   /** Multi-step dialogs: each new key moves focus to the title so the step's heading is announced. */
   focusKey?: string;
+  /**
+   * Where focus goes on close when the element that opened the modal is gone (it was
+   * replaced while the modal was open). Without it, focus would fall back to the page.
+   */
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 }
 
 const SIZES = {
@@ -25,6 +32,11 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]):not([tabindex="-1"]), ' +
   'input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), ' +
   '[tabindex]:not([tabindex="-1"])';
+
+/** Back to whatever opened the modal; if that is gone, to the fallback (read now, at close). */
+function restoreFocus(opener: HTMLElement | null, fallback?: React.RefObject<HTMLElement | null>) {
+  (opener?.isConnected ? opener : fallback?.current)?.focus();
+}
 
 /**
  * Owns the overlay, escape-to-close, scroll lock, focus trap, and ARIA wiring.
@@ -45,8 +57,10 @@ export function Modal({
   children,
   footer,
   dismissible = true,
+  closeOnBackdrop = true,
   size = "md",
   focusKey,
+  returnFocusRef,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -73,6 +87,9 @@ export function Modal({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        // A control inside that handles Escape itself (closing its own dropdown) marks it
+        // handled, and the modal stays open.
+        if (event.defaultPrevented) return;
         event.stopPropagation();
         if (dismissibleRef.current) onCloseRef.current();
         return;
@@ -99,14 +116,15 @@ export function Modal({
       }
     };
 
-    document.addEventListener("keydown", onKeyDown, true);
+    // Bubble phase, so a control inside sees Escape first and can claim it.
+    document.addEventListener("keydown", onKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", onKeyDown, true);
+      document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = overflow;
-      previouslyFocused.current?.focus();
+      restoreFocus(previouslyFocused.current, returnFocusRef);
     };
-  }, [isOpen]);
+  }, [isOpen, returnFocusRef]);
 
   // Declared after the effect above so `previouslyFocused` is captured before
   // focus moves into the panel.
@@ -124,7 +142,7 @@ export function Modal({
       <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={() => {
-          if (dismissible) onClose();
+          if (dismissible && closeOnBackdrop) onClose();
         }}
       />
 

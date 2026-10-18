@@ -5,26 +5,17 @@ import { GridBackground, Navbar, Footer } from "../components";
 import { useToast } from "../components/ui";
 import {
   ProfileHeader, ProfileHeaderFields, ProfileEditToolbar, ProfileViewToolbar, SectionOrderPanel,
-  AboutSection, AboutEditor,
-  SkillsSection,
-  ExperienceSection, ExperienceEditor,
-  EducationSection, EducationEditor,
-  LinksSection, LinksEditor,
+  ProfileSections,
 } from "../components/profile";
-import {
-  useProfile, useAddSkill, useRemoveSkill,
-  type SectionKey, type SectionConfig,
-  DEFAULT_SECTION_CONFIG,
-} from "@/lib/hooks/profile";
+import { useProfile, type SectionConfig, DEFAULT_SECTION_CONFIG } from "@/lib/hooks/profile";
 import { useProfileEditor } from "@/lib/hooks/profileEditor";
+import { hasProfileDetails } from "@/lib/utils/profileSummary";
 
 export default function ProfilePage() {
   const { data: profile, isLoading, isError } = useProfile();
-  const addSkill    = useAddSkill();
-  const removeSkill = useRemoveSkill();
   const toast       = useToast();
   const editor = useProfileEditor(profile, {
-    onSaved: () => toast("Profile updated"),
+    onSaved: ({ changed }) => { if (changed) toast("Profile updated"); },
     onError: (message) => toast(message, "error"),
   });
 
@@ -45,40 +36,13 @@ export default function ProfilePage() {
   );
 
   const { isEditing } = editor;
-  const { errors } = editor.form.formState;
   const sectionConfig: SectionConfig[] = profile.section_config ?? DEFAULT_SECTION_CONFIG;
-
-  const renderSection = (key: SectionKey) => {
-    switch (key) {
-      case "about":
-        return isEditing ? <AboutEditor key={key} /> : <AboutSection key={key} bio={profile.bio} />;
-      case "skills":
-        // skills save on their own as they are added or removed, not with the form
-        return (
-          <SkillsSection
-            key={key}
-            skills={profile.skills}
-            isEditing={isEditing}
-            onAdd={(skill) => addSkill.mutate(skill, { onError: () => toast("Couldn't add that skill. Try again.", "error") })}
-            onRemove={(id) => removeSkill.mutate(id, { onError: () => toast("Couldn't remove that skill. Try again.", "error") })}
-          />
-        );
-      case "experience":
-        return isEditing ? <ExperienceEditor key={key} /> : <ExperienceSection key={key} experience={profile.experience} />;
-      case "education":
-        return isEditing ? <EducationEditor key={key} /> : <EducationSection key={key} education={profile.education} />;
-      case "links":
-        return isEditing ? <LinksEditor key={key} /> : <LinksSection key={key} links={profile.links} />;
-      default:
-        return null;
-    }
-  };
 
   const card = (
     <div className="bg-white/90 backdrop-blur-sm border border-neutral-200 p-4 sm:p-8 flex-1 max-w-3xl">
       {isEditing ? (
         <ProfileEditToolbar
-          error={errors.root?.message ?? (Object.keys(errors).length ? "Fix the highlighted fields" : undefined)}
+          error={editor.error}
           saving={editor.isSaving}
           onCancel={editor.stop}
           onSave={editor.submit}
@@ -87,7 +51,7 @@ export default function ProfilePage() {
         <ProfileViewToolbar
           userId={profile.user_id}
           onEdit={editor.start}
-          canImport={profile.experience.length === 0 && profile.education.length === 0}
+          canImport={!hasProfileDetails(profile)}
         />
       )}
 
@@ -95,7 +59,7 @@ export default function ProfilePage() {
         {isEditing ? <ProfileHeaderFields email={profile.email} /> : undefined}
       </ProfileHeader>
 
-      {sectionConfig.map((s) => renderSection(s.key))}
+      <ProfileSections profile={profile} sections={sectionConfig.map((s) => s.key)} isEditing={isEditing} />
     </div>
   );
 

@@ -43,6 +43,7 @@ export function Select<T extends string>({
         aria-describedby={error ? errorId : undefined}
         className={`w-full font-mono text-neutral-700 bg-neutral-50 border outline-none transition-colors
                   focus:bg-white disabled:opacity-50 ${SIZES[size]}
+                  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
                   ${error ? "border-red-300 focus:border-red-400" : "border-neutral-200 focus:border-neutral-400"}`}
       >
         {options.map((option) => (

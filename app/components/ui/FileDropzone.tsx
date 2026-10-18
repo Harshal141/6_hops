@@ -13,10 +13,13 @@ interface FileDropzoneProps {
   /** Called instead of `onFile` when a file fails `accept` or `maxBytes`. The caller owns the copy. */
   onReject?: (reason: FileRejectReason) => void;
   error?: string;
-  /** The main line, e.g. "Drop your PDF here". */
-  label: string;
+  /**
+   * The main line, e.g. "Drop your PDF here". A node, so a caller can vary the wording by
+   * breakpoint (touch screens can't drop); omit it to lead with the action cue alone.
+   */
+  label?: React.ReactNode;
   /** Text of the button-styled cue under the label, e.g. "Choose file". */
-  actionLabel?: string;
+  actionLabel?: React.ReactNode;
   /** The smallest line: limits or accepted types. */
   hint?: string;
 }
@@ -127,7 +130,7 @@ export function FileDropzone({
         >
           <UploadIcon />
         </span>
-        <span className="text-sm font-semibold text-neutral-800">{label}</span>
+        {label && <span className="text-sm font-semibold text-neutral-800">{label}</span>}
         {actionLabel && (
           // A cue, not a second button: the whole zone is the button, and nested
           // interactive elements would trip screen readers and double-fire clicks.

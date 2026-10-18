@@ -1,10 +1,12 @@
-type Tone = "neutral" | "success" | "warning" | "info" | "contrast";
+type Tone = "neutral" | "success" | "warning" | "info" | "contrast" | "accent";
 
 interface BadgeProps {
   children: React.ReactNode;
   tone?: Tone;
   /** A small rounded pill, for a marker pinned to another element's corner. */
   pill?: boolean;
+  /** A tight square tag that sits inline beside a name. */
+  compact?: boolean;
 }
 
 const TONES: Record<Tone, string> = {
@@ -15,10 +17,16 @@ const TONES: Record<Tone, string> = {
   // The app's own ink on paper (white surface, neutral-800 like the CTAs). Reads on both a
   // light background and on top of a dark button.
   contrast: "bg-white text-neutral-800 border-neutral-800",
+  // the brand purple (globals.css --color-accent), for a marker like "Invited you"
+  accent: "bg-accent text-white border-accent",
 };
 
 /** A non-interactive status label. Square, like every other surface, unless `pill`. */
-export function Badge({ children, tone = "neutral", pill = false }: BadgeProps) {
-  const shape = pill ? "rounded-full text-[10px] leading-none px-2 py-1 whitespace-nowrap" : "text-xs px-3 py-1.5";
+export function Badge({ children, tone = "neutral", pill = false, compact = false }: BadgeProps) {
+  const shape = pill
+    ? "rounded-full text-[10px] leading-none px-2 py-1 whitespace-nowrap"
+    : compact
+      ? "text-[10px] leading-tight px-1.5 py-0.5 whitespace-nowrap"
+      : "text-xs px-3 py-1.5";
   return <span className={`font-mono border inline-block ${shape} ${TONES[tone]}`}>{children}</span>;
 }

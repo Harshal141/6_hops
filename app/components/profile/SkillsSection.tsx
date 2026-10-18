@@ -18,6 +18,7 @@ function SkillSearch({ onAdd, onClose, existing }: {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const { data: results = [] } = useSearchSkills(query);
 
   // Focus programmatically — avoids browser click/focus events that would open the dropdown
@@ -37,6 +38,13 @@ function SkillSearch({ onAdd, onClose, existing }: {
   }
 
   const visible = results.filter((s) => !existing.includes(s.id));
+  const showList = open && visible.length > 0;
+
+  // The list is in flow, so inside a scrolling container (the edit modal, where skills come
+  // last) it can sit below the fold: bring it into view when it opens.
+  useEffect(() => {
+    if (showList) listRef.current?.scrollIntoView({ block: "nearest" });
+  }, [showList]);
 
   const add = (skill: Skill) => {
     onAdd(skill);
@@ -47,7 +55,8 @@ function SkillSearch({ onAdd, onClose, existing }: {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") { onClose(); return; }
+    // handled here: a modal around the editor must not close (and discard the form) too
+    if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
     if (!open || visible.length === 0) return;
     if (e.key === "ArrowDown") { e.preventDefault(); setHighlighted((h) => Math.min(h + 1, visible.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHighlighted((h) => Math.max(h - 1, 0)); }
@@ -55,7 +64,7 @@ function SkillSearch({ onAdd, onClose, existing }: {
   };
 
   return (
-    <div className="relative">
+    <div className="w-full">
       <input
         ref={inputRef}
         type="text"
@@ -65,10 +74,10 @@ function SkillSearch({ onAdd, onClose, existing }: {
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder="Search skills..."
-        className="font-mono text-xs px-3 py-1.5 border border-dashed border-neutral-300 text-neutral-600 bg-transparent focus:border-neutral-400 outline-none w-48"
+        className="font-mono text-xs px-3 py-1.5 border border-dashed border-neutral-300 text-neutral-600 bg-transparent focus:border-neutral-400 outline-none w-48 max-w-full"
       />
-      {open && visible.length > 0 && (
-        <div className="absolute top-full left-0 mt-1 w-72 bg-white border border-neutral-200 shadow-md z-10 max-h-60 overflow-y-auto">
+      {showList && (
+        <div ref={listRef} className="mt-1 w-72 max-w-full bg-white border border-neutral-200 shadow-md max-h-60 overflow-y-auto">
           {visible.map((s, i) => (
             <button
               key={s.id}
@@ -91,9 +100,11 @@ interface Props {
   isEditing: boolean;
   onAdd: (skill: Skill) => void;
   onRemove: (skillId: number) => void;
+  /** A note under the heading while editing, e.g. that skills save on their own. */
+  editHint?: string;
 }
 
-export function SkillsSection({ skills, isEditing, onAdd, onRemove }: Props) {
+export function SkillsSection({ skills, isEditing, onAdd, onRemove, editHint }: Props) {
   const [showSearch, setShowSearch] = useState(false);
 
   // Reset when leaving edit mode — adjusted during render, not in an effect
@@ -113,6 +124,7 @@ export function SkillsSection({ skills, isEditing, onAdd, onRemove }: Props) {
           </Button>
         )}
       </div>
+      {isEditing && editHint && <p className={`${PROFILE_TEXT.meta} -mt-1 mb-3`}>{editHint}</p>}
 
       <div className="flex flex-wrap gap-2">
         {skills.map((skill) => (

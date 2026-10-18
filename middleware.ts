@@ -5,7 +5,7 @@ export default auth((req) => {
   const { pathname, search } = req.nextUrl;
   const isLoggedIn = !!req.auth;
   const isAuthPage = pathname === "/" || pathname === "/login";
-  const isProtected = pathname.startsWith("/dashboard") || pathname.startsWith("/profile") || pathname.startsWith("/connection") || pathname.startsWith("/invite");
+  const isProtected = pathname.startsWith("/dashboard") || pathname.startsWith("/profile") || pathname.startsWith("/connection") || pathname.startsWith("/invite") || pathname.startsWith("/onboarding");
 
   if (isLoggedIn && isAuthPage) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
@@ -19,5 +19,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/", "/login", "/dashboard/:path*", "/profile/:path*", "/connection/:path*", "/invite/:path*"],
+  matcher: ["/", "/login", "/dashboard/:path*", "/profile/:path*", "/connection/:path*", "/invite/:path*", "/onboarding/:path*"],
 };

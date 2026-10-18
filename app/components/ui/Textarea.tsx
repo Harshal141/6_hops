@@ -41,6 +41,7 @@ export function Textarea({
       className={`font-mono text-neutral-700 placeholder:text-neutral-400 leading-relaxed w-full
                 bg-neutral-50 border outline-none resize-none transition-colors focus:bg-white
                 disabled:opacity-50 ${SIZES[size]}
+                focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
                 ${error ? "border-red-300 focus:border-red-400" : "border-neutral-200 focus:border-neutral-400"}`}
     />
   );

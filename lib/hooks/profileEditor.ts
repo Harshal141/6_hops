@@ -11,12 +11,19 @@ import {
   type EducationFormValues, type ExperienceFormValues,
   type ProfileFormOutput, type ProfileFormValues,
 } from "@/lib/schemas/profile";
-import { useSaveProfile, type Profile, type SectionConfig } from "./profile";
+import { normalizeProfile, useSaveProfile, type Profile, type SectionConfig } from "./profile";
 
 // ── Editor: edit mode, the form, and the one save ──────────
 
+/** A save that went through. `changed` is false when there was nothing to send. */
+export interface EditorSaved {
+  changed: boolean;
+  /** The profile as it now stands. */
+  profile: Profile;
+}
+
 interface EditorCallbacks {
-  onSaved: () => void;
+  onSaved: (saved: EditorSaved) => void;
   onError: (message: string) => void;
 }
 
@@ -56,11 +63,15 @@ export function useProfileEditor(profile: Profile | undefined, { onSaved, onErro
   const submit = form.handleSubmit(async (values) => {
     if (!session) return;
     const patch = buildProfilePatch(session.initial, values, session.version);
-    if (!patch) return stop();
-    try {
-      await save.mutateAsync(patch);
+    if (!patch) {
       stop();
-      onSaved();
+      if (profile) onSaved({ changed: false, profile });
+      return;
+    }
+    try {
+      const data = await save.mutateAsync(patch);
+      stop();
+      onSaved({ changed: true, profile: normalizeProfile(data) });
     } catch (err) {
       const message = saveErrorMessage(err);
       form.setError("root", { message });
@@ -76,8 +87,13 @@ export function useProfileEditor(profile: Profile | undefined, { onSaved, onErro
       onError: (err) => onError(saveErrorMessage(err)),
     });
 
+  // What the save bar says: the save's own error, or a pointer to the highlighted fields.
+  const { errors } = form.formState;
+  const error = errors.root?.message ?? (Object.keys(errors).length ? "Fix the highlighted fields" : undefined);
+
   return {
     form,
+    error,
     isEditing: session !== null,
     isSaving: save.isPending,
     start,
@@ -86,6 +102,8 @@ export function useProfileEditor(profile: Profile | undefined, { onSaved, onErro
     changeOrder,
   };
 }
+
+export type ProfileEditor = ReturnType<typeof useProfileEditor>;
 
 // ── Field adapters for the ui primitives (value / onChange / error) ──
 

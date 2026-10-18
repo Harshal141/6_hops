@@ -28,23 +28,33 @@ interface Props {
   onClose: () => void;
   /** Offers a "fill it in myself" way out on the pick step, besides the ×. */
   onManual?: () => void;
+  /**
+   * A file the caller already picked (an inline dropzone): the modal opens straight on
+   * "Reading your resume" instead of asking for one again.
+   */
+  initialFile?: File;
+  /** Called once the reviewed draft is saved, just before the modal closes. */
+  onApplied?: () => void;
 }
 
 /** The resume-import flow. Mount it to open it; unmounting discards everything, so each open starts on `pick`. */
-export function ResumeImportModal({ onClose, onManual }: Props) {
+export function ResumeImportModal({ onClose, onManual, initialFile, onApplied }: Props) {
   const parse = useParseResume();
   const apply = useApplyImport();
-  const [state, dispatch] = useReducer(resumeImportReducer, INITIAL_IMPORT_STATE);
+  // A handed-in file starts the machine already past `pick`, as if it had just been dropped.
+  const [state, dispatch] = useReducer(resumeImportReducer, initialFile, (file?: File) =>
+    file ? resumeImportReducer(INITIAL_IMPORT_STATE, { type: "upload", file }) : INITIAL_IMPORT_STATE,
+  );
   const inFlight = useRef<AbortController | null>(null);
 
   // Closing mid-upload abandons the request; the BE run still finishes and is cached.
   useEffect(() => () => inFlight.current?.abort(), []);
 
-  const upload = async (file: File) => {
+  /** Sends one file; the machine must already be on `processing`. */
+  async function send(file: File) {
     inFlight.current?.abort();
     const controller = new AbortController();
     inFlight.current = controller;
-    dispatch({ type: "upload", file });
 
     try {
       const response = await parse.mutateAsync({ file, signal: controller.signal });
@@ -52,7 +62,19 @@ export function ResumeImportModal({ onClose, onManual }: Props) {
     } catch (err) {
       if (!controller.signal.aborted) dispatch({ type: "parseFailed", error: importErrorFrom(err, "parse") });
     }
+  }
+
+  const upload = (file: File) => {
+    dispatch({ type: "upload", file });
+    send(file);
   };
+
+  // Mount-only on purpose: a handed-in file is sent once. `send` aborts any earlier
+  // request itself, so a dev-mode double mount still ends with one live upload.
+  useEffect(() => {
+    if (initialFile) send(initialFile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { review } = state;
   const issues = useMemo(() => (review ? reviewIssues(review) : []), [review]);
@@ -64,6 +86,7 @@ export function ResumeImportModal({ onClose, onManual }: Props) {
     dispatch({ type: "save" });
     try {
       await apply.mutateAsync({ enrichmentId: review.enrichmentId, payload });
+      onApplied?.();
       onClose();
     } catch (err) {
       dispatch({ type: "saveFailed", error: importErrorFrom(err, "apply") });

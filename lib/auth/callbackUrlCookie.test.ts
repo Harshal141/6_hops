@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-// The module also exports a cookies() reader; only the pure parsers are tested here.
-vi.mock("next/headers", () => ({ cookies: vi.fn() }));
-const { callbackPathFromCookie, inviteReferrerFromPath } = await import("./callbackUrlCookie");
+// cookies() is mocked: the parsers are pure, and readCallbackPath only needs a cookie store.
+const store = new Map<string, string>();
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => ({ get: (name: string) => (store.has(name) ? { name, value: store.get(name) } : undefined) })),
+}));
+const { callbackPathFromCookie, inviteReferrerFromPath, readCallbackPath } = await import("./callbackUrlCookie");
 
 describe("callbackPathFromCookie", () => {
   it("keeps the path and query of an absolute or relative value", () => {
@@ -32,5 +35,26 @@ describe("inviteReferrerFromPath", () => {
     for (const path of [null, "/dashboard", "/invite/", "/invite/a/b", "/profile/ada-1234", "/invite/%E0%A4%A"]) {
       expect(inviteReferrerFromPath(path)).toBeNull();
     }
+  });
+});
+
+// The chain auth.ts's signIn callback runs: Auth.js's callback-url cookie, set before leaving
+// for the provider, becomes the `referredBy` it sends to POST /auth/identity.
+describe("invite callback to referredBy", () => {
+  it("reads the referrer from the callback-url cookie of an invite sign-in, on http and https", async () => {
+    store.clear();
+    store.set("authjs.callback-url", "http://localhost:3001/invite/ada-1234");
+    expect(inviteReferrerFromPath(await readCallbackPath())).toBe("ada-1234");
+
+    store.clear();
+    store.set("__Secure-authjs.callback-url", "https://6-hops.vercel.app/invite/ada-1234?utm=x");
+    expect(inviteReferrerFromPath(await readCallbackPath())).toBe("ada-1234");
+  });
+
+  it("has no referrer for any other destination, or no cookie", async () => {
+    store.clear();
+    expect(inviteReferrerFromPath(await readCallbackPath())).toBeNull();
+    store.set("authjs.callback-url", "http://localhost:3001/dashboard");
+    expect(inviteReferrerFromPath(await readCallbackPath())).toBeNull();
   });
 });

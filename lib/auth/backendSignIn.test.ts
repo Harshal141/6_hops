@@ -34,6 +34,13 @@ describe("backendSignIn", () => {
     expect(JSON.parse(String(init.body))).toEqual(BODY);
   });
 
+  it("forwards the invite referrer as referredBy", async () => {
+    const fetchImpl = respond(200, { id: "u-1", user_id: "grace-1a2b3c4d", icon: null });
+    await backendSignIn({ ...BODY, referredBy: "ada-1234" }, { ...OPTIONS, fetchImpl });
+    const [, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toEqual({ ...BODY, referredBy: "ada-1234" });
+  });
+
   it.each([
     [403, "email_unverified", "email_unverified"],
     [409, "provider_already_linked", "provider_already_linked"],

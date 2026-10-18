@@ -1,6 +1,8 @@
 export { ProfileHeader } from "./ProfileHeader";
 export { ProfileHeaderFields } from "./ProfileHeaderFields";
 export { ProfileEditToolbar } from "./ProfileEditToolbar";
+export { ProfileEditModal } from "./ProfileEditModal";
+export { ProfileSections } from "./ProfileSections";
 export { ProfileSection } from "./ProfileSection";
 export { AboutSection } from "./AboutSection";
 export { AboutEditor } from "./AboutEditor";

@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useSearchUsers, useHopsTo, profileDestination, needsPathView, type SearchUser } from "@/lib/hooks/connection";
 import { ConnectRequestModal } from "../connections/ConnectRequestModal";
 import { Avatar, Input } from "../ui";
 import { ConnectionStatusAction } from "../connections/ConnectionStatusAction";
 import { ApiError, SESSION_EXPIRED_COPY } from "@/lib/utils/api";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 
 export function DiscoverPanel() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
-
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery), 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const debouncedQuery = useDebouncedValue(searchQuery);
 
   const { data: results, isLoading, error } = useSearchUsers(debouncedQuery);
 

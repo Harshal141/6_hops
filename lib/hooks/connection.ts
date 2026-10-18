@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch, jsonBody, ApiError } from "@/lib/utils/api";
 import { useProfile } from "./profile";
+import { SUGGESTIONS_KEY } from "./suggestions";
 
 export { ApiError };
 
@@ -103,7 +104,7 @@ const SEARCH_KEY = ["user-search"] as const;
 function useGraphInvalidation() {
   const qc = useQueryClient();
   return () => {
-    for (const key of [CONNECTIONS_KEY, REQUESTS_KEY, REACHABLE_KEY, PATH_KEY, SEARCH_KEY]) {
+    for (const key of [CONNECTIONS_KEY, REQUESTS_KEY, REACHABLE_KEY, PATH_KEY, SEARCH_KEY, SUGGESTIONS_KEY]) {
       qc.invalidateQueries({ queryKey: key });
     }
   };
